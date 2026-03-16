@@ -1,52 +1,54 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
-
-# .env files
+# Env
 .env
+.env.*
+!.env.example
 
-# compiled output
+# Compiled output
 dist
 tmp
 out-tsc
 
-# dependencies
+# Dependencies
 node_modules
 
-# IDEs and editors
+# IDEs
 /.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# IDE - VSCode
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
 
-# misc
+# Misc
 /.sass-cache
 /connect.lock
 /coverage
-/libpeerconnection.log
 npm-debug.log
 yarn-error.log
 testem.log
-/typings
 
-# System Files
+# System
 .DS_Store
 Thumbs.db
 
+# Nx
 .nx/cache
 .nx/workspace-data
 
-# Nuxt dev/build outputs
+# Nuxt
 .output
 .data
 .nuxt
 .nitro
 .cache
+
+# Prisma generated
+libs/shared/db/generated
+
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
