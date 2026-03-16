@@ -36,6 +36,7 @@
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
     "h3": "^1.8.2",
+    "jsonc-eslint-parser": "^2.1.0",
     "nuxt": "^4.0.0",
     "nx": "22.5.4",
     "prettier": "~3.6.2",
@@ -50,6 +51,7 @@
   },
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "libs/shared/*"
   ]
 }
