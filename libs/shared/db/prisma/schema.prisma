@@ -8,47 +8,38 @@ datasource db {
 }
 
 // ==================
+// CLIENTES (tenants)
+// ==================
+model Account {
+  id            String    @id @default(uuid())
+  erpCustomerId String    @unique
+  name          String
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  users     User[]
+  evidences PaymentEvidence[]
+}
+
+// ==================
 // USUARIOS
 // ==================
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String    @id @default(uuid())
+  accountId String
   name      String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  email     String    @unique
+  password  String
+  isActive  Boolean   @default(true)
+  role      Role      @default(VIEWER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 
-  userClients UserClient[]
-  evidences   PaymentEvidence[]
-}
-
-// ==================
-// CLIENTES (tenants)
-// ==================
-model Client {
-  id          String   @id @default(uuid())
-  name        String
-  erpClientId String   @unique
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  userClients UserClient[]
-  evidences   PaymentEvidence[]
-}
-
-// ==================
-// RELACION USUARIO-CLIENTE
-// ==================
-model UserClient {
-  userId   String
-  clientId String
-  role     Role   @default(VIEWER)
-
-  user   User   @relation(fields: [userId], references: [id])
-  client Client @relation(fields: [clientId], references: [id])
-
-  @@id([userId, clientId])
+  account   Account           @relation(fields: [accountId], references: [id])
+  evidences PaymentEvidence[]
 }
 
 // ==================
@@ -56,7 +47,7 @@ model UserClient {
 // ==================
 model PaymentEvidence {
   id          String         @id @default(uuid())
-  clientId    String
+  accountId   String
   uploadedBy  String
   amount      Decimal
   currency    String         @default("PEN")
@@ -68,9 +59,10 @@ model PaymentEvidence {
   status      EvidenceStatus @default(PENDING)
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+  deletedAt   DateTime?
 
-  client Client @relation(fields: [clientId], references: [id])
-  user   User   @relation(fields: [uploadedBy], references: [id])
+  account Account @relation(fields: [accountId], references: [id])
+  user    User    @relation(fields: [uploadedBy], references: [id])
 }
 
 // ==================

@@ -10,7 +10,7 @@ export default defineNuxtConfig({
     port: 4200,
   },
   typescript: {
-    typeCheck: true,
+    typeCheck: false, // por problemas con la version de nuxt y vite
     tsConfig: {
       extends: '../../../tsconfig.base.json', // Nuxt copies this string as-is to the `./.nuxt/tsconfig.json`, therefore it needs to be relative to that directory
     },
@@ -21,5 +21,11 @@ export default defineNuxtConfig({
   css: ['~/assets/css/styles.css'],
   vite: {
     plugins: [nxViteTsPaths()],
+    optimizeDeps: {
+      include: [
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
+      ]
+    }
   },
 });
