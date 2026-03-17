@@ -1,109 +1,109 @@
 # Evihub
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+Plataforma SaaS para el registro y gestión de evidencias de pago. Permite a empresas registrar comprobantes de pago, leer datos automáticamente mediante OCR, y controlar el acceso de usuarios desde un sistema ERP externo.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+## Stack
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/js?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+| Capa          | Tecnología              |
+| ------------- | ----------------------- |
+| Frontend      | Nuxt 3 + Tailwind CSS   |
+| Backend       | NestJS + TypeScript     |
+| Base de datos | PostgreSQL              |
+| ORM           | Prisma                  |
+| OCR           | Google Cloud Vision API |
+| Monorepo      | Nx                      |
+| Contenedores  | Docker                  |
 
-## Generate a library
-
-```sh
-npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
-```
-
-## Run tasks
-
-To build the library use:
-
-```sh
-npx nx build pkg1
-```
-
-To run any task with Nx use:
-
-```sh
-npx nx <target> <project-name>
-```
-
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
-
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Versioning and releasing
-
-To version and release the library use
+## Estructura del proyecto
 
 ```
-npx nx release
+evihub/
+├── apps/
+│   ├── api/          # Backend NestJS
+│   └── web/          # Frontend Nuxt 3
+├── libs/
+│   └── shared/
+│       └── db/       # Prisma client y PrismaService compartido
+├── docker-compose.yml
+├── prisma.config.ts
+└── .env.example
 ```
 
-Pass `--dry-run` to see what would happen without actually releasing the library.
+## Requisitos
 
-[Learn more about Nx release &raquo;](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- Node.js 18+
+- Yarn
+- Docker
 
-## Keep TypeScript project references up to date
+## Instalación
 
-Nx automatically updates TypeScript [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) in `tsconfig.json` files to ensure they remain accurate based on your project dependencies (`import` or `require` statements). This sync is automatically done when running tasks such as `build` or `typecheck`, which require updated references to function correctly.
+```bash
+# Clonar el repositorio
+git clone https://github.com/SteavenRocha/evihub.git
+cd evihub
 
-To manually trigger the process to sync the project graph dependencies information to the TypeScript project references, run the following command:
+# Instalar dependencias
+yarn install
 
-```sh
-npx nx sync
+# Copiar variables de entorno
+cp .env.example .env
+# Edita el .env con tus credenciales
 ```
 
-You can enforce that the TypeScript project references are always in the correct state when running in CI by adding a step to your CI job configuration that runs the following command:
+## Base de datos
 
-```sh
-npx nx sync:check
+```bash
+# Levantar PostgreSQL con Docker
+docker compose up -d
+
+# Generar el cliente de Prisma
+npx prisma generate --schema=libs/shared/db/prisma/schema.prisma
+
+# Correr las migraciones
+npx prisma migrate dev --name init
 ```
 
-[Learn more about nx sync](https://nx.dev/reference/nx-commands#sync)
+## Desarrollo
 
-## Set up CI!
+```bash
+# Correr backend y frontend juntos
+nx run-many --target=serve --projects=api,web
 
-### Step 1
+# Solo el backend
+nx serve api
 
-To connect to Nx Cloud, run the following command:
-
-```sh
-npx nx connect
+# Solo el frontend
+nx serve web
 ```
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+## Variables de entorno
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Copia `.env.example` a `.env` y completa los valores:
 
-### Step 2
-
-Use the following command to configure a CI workflow for your workspace:
-
-```sh
-npx nx g ci-workflow
+```env
+DB_USERNAME=
+DB_PASSWORD=
+DB_NAME=
+DATABASE_URL=
 ```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Funcionalidades del MVP
 
-## Install Nx Console
+- Registro de evidencias de pago con imagen
+- Lectura automática de comprobantes mediante OCR
+- Control de acceso de usuarios via webhook desde ERP externo
+- Soporte multi-tenant: un usuario puede pertenecer a varios clientes
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+## Control de acceso desde ERP
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Evihub expone un endpoint webhook que permite al ERP activar o desactivar usuarios:
 
-## Useful links
+```
+POST /api/users/:id/status
+```
 
-Learn more:
+Los usuarios desactivados reciben un `401` en su próximo intento de acceso aunque tengan token válido.
 
-- [Learn more about this workspace setup](https://nx.dev/nx-api/js?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+---
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Desarrollado por [Steaven Rocha](https://github.com/SteavenRocha)
