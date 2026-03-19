@@ -11,35 +11,40 @@ datasource db {
 // CLIENTES (tenants)
 // ==================
 model Account {
-  id            String    @id @default(uuid())
-  erpCustomerId String    @unique
+  id            String    @id @default(uuid()) @map("id")
+  erpCustomerId String    @unique @map("erp_customer_id")
   name          String
-  isActive      Boolean   @default(true)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
 
   users     User[]
   evidences PaymentEvidence[]
+
+  @@map("accounts")
 }
 
 // ==================
 // USUARIOS
 // ==================
 model User {
-  id        String    @id @default(uuid())
-  accountId String
-  name      String
-  email     String    @unique
-  password  String
-  isActive  Boolean   @default(true)
-  role      Role      @default(VIEWER)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  id           String    @id @default(uuid())
+  accountId    String    @map("account_id")
+  name         String
+  email        String    @unique
+  password     String
+  refreshToken String?   @map("refresh_token")
+  isActive     Boolean   @default(true) @map("is_active")
+  role         Role      @default(VIEWER)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
 
   account   Account           @relation(fields: [accountId], references: [id])
   evidences PaymentEvidence[]
+
+  @@map("users")
 }
 
 // ==================
@@ -47,22 +52,24 @@ model User {
 // ==================
 model PaymentEvidence {
   id          String         @id @default(uuid())
-  accountId   String
-  uploadedBy  String
+  accountId   String         @map("account_id")
+  uploadedBy  String         @map("uploaded_by")
   amount      Decimal
   currency    String         @default("PEN")
-  paymentDate DateTime
+  paymentDate DateTime       @map("payment_date")
   bank        String?
   reference   String?
-  imageUrl    String?
-  ocrRaw      Json?
+  imageUrl    String?        @map("image_url")
+  ocrRaw      Json?          @map("ocr_raw")
   status      EvidenceStatus @default(PENDING)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  deletedAt   DateTime?
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  deletedAt   DateTime?      @map("deleted_at")
 
   account Account @relation(fields: [accountId], references: [id])
   user    User    @relation(fields: [uploadedBy], references: [id])
+
+  @@map("payment_evidences")
 }
 
 // ==================

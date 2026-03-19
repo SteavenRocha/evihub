@@ -1,0 +1,10 @@
+import * as bcrypt from 'bcrypt';
+const SALT_ROUNDS = 10;
+
+export async function hashData(data: string): Promise<string> {
+    return bcrypt.hash(data, SALT_ROUNDS);
+}
+
+export async function compareHash(data: string, hash: string): Promise<boolean> {
+    return bcrypt.compare(data, hash);
+}
