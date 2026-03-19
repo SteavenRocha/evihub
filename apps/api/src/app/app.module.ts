@@ -7,6 +7,8 @@ import { CommonModule } from './common/common.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
+import { WebhookModule } from './webhook/webhook.module';
+import { AccountsModule } from './accounts/accounts.module';
 
 @Module({
   imports: [
@@ -22,6 +24,10 @@ import { RolesGuard } from './auth/guards/roles.guard';
     AuthModule,
 
     UsersModule,
+
+    WebhookModule,
+
+    AccountsModule,
   ],
   controllers: [],
   providers: [
@@ -35,4 +41,4 @@ import { RolesGuard } from './auth/guards/roles.guard';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}
