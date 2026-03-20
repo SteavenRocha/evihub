@@ -1,10 +1,11 @@
-import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength, Matches, IsUUID } from 'class-validator';
+
+import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, MaxLength, MinLength } from 'class-validator';
 import { Role } from '@evihub/db';
 
 export class CreateUserDto {
     @IsString()
     @IsNotEmpty()
-    @MaxLength(255)
+    @MaxLength(100)
     name!: string;
 
     @IsEmail()

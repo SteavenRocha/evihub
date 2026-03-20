@@ -1,12 +1,17 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
-import { NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
+import { PrismaClientExceptionFilter } from './app/common/filters/prisma-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const globalPrefix = 'api/v2';
   const port = process.env.PORT || 3000;
+
+  // Filter for Prisma exceptions
+  const { httpAdapter } = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new PrismaClientExceptionFilter(httpAdapter));
 
   app.setGlobalPrefix(globalPrefix);
 

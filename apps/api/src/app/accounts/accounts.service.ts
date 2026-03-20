@@ -1,26 +1,53 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
+import { PrismaService } from '@evihub/db';
 
 @Injectable()
 export class AccountsService {
-  create(createAccountDto: CreateAccountDto) {
-    return 'This action adds a new account';
+
+  constructor(
+    private prisma: PrismaService
+  ) { }
+
+  async create(createAccountDto: CreateAccountDto) {
+    return this.prisma.account.create({
+      data: {
+        name: createAccountDto.name,
+        customerId: createAccountDto.customerId,
+        ...(createAccountDto.isActive !== undefined && { isActive: createAccountDto.isActive }),
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all accounts`;
+  async findAll() {
+    return this.prisma.account.findMany({
+      where: { deletedAt: null },
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} account`;
+  async findById(id: string) {
+    const account = await this.prisma.account.findUnique({
+      where: { id, deletedAt: null },
+    });
+
+    if (!account) {
+      throw new NotFoundException(`Account ${id} not found`);
+    }
+
+    return account;
   }
 
-  update(id: number, updateAccountDto: UpdateAccountDto) {
-    return `This action updates a #${id} account`;
+  async findByCustomerId(customerId: string) {
+    return this.prisma.account.findUnique({
+      where: { customerId, deletedAt: null },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} account`;
+  async updateStatus(id: string, isActive: boolean): Promise<void> {
+    await this.prisma.account.update({
+      where: { id },
+      data: { isActive },
+    });
   }
 }

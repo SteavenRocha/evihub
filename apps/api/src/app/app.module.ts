@@ -23,11 +23,11 @@ import { AccountsModule } from './accounts/accounts.module';
 
     AuthModule,
 
+    AccountsModule,
+
     UsersModule,
 
     WebhookModule,
-
-    AccountsModule,
   ],
   controllers: [],
   providers: [
@@ -41,4 +41,4 @@ import { AccountsModule } from './accounts/accounts.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }
