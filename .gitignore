@@ -51,3 +51,6 @@ libs/shared/db/generated
 !.yarn/plugins
 !.yarn/sdks
 !.yarn/versions
+
+# Uploads
+/uploads/*

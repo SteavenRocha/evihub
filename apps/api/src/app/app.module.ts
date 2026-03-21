@@ -9,6 +9,8 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { WebhookModule } from './webhook/webhook.module';
 import { AccountsModule } from './accounts/accounts.module';
+import { OcrModule } from './ocr/ocr.module';
+import { EvidencesModule } from './evidences/evidences.module';
 
 @Module({
   imports: [
@@ -28,6 +30,10 @@ import { AccountsModule } from './accounts/accounts.module';
     UsersModule,
 
     WebhookModule,
+
+    OcrModule,
+
+    EvidencesModule,
   ],
   controllers: [],
   providers: [
@@ -41,4 +47,4 @@ import { AccountsModule } from './accounts/accounts.module';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

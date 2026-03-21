@@ -7,11 +7,11 @@ import { PrismaService } from '@evihub/db';
 export class AccountsService {
 
   constructor(
-    private prisma: PrismaService
+    private readonly prismaService: PrismaService
   ) { }
 
   async create(createAccountDto: CreateAccountDto) {
-    return this.prisma.account.create({
+    return this.prismaService.account.create({
       data: {
         name: createAccountDto.name,
         customerId: createAccountDto.customerId,
@@ -21,13 +21,13 @@ export class AccountsService {
   }
 
   async findAll() {
-    return this.prisma.account.findMany({
+    return this.prismaService.account.findMany({
       where: { deletedAt: null },
     });
   }
 
   async findById(id: string) {
-    const account = await this.prisma.account.findUnique({
+    const account = await this.prismaService.account.findUnique({
       where: { id, deletedAt: null },
     });
 
@@ -39,13 +39,13 @@ export class AccountsService {
   }
 
   async findByCustomerId(customerId: string) {
-    return this.prisma.account.findUnique({
+    return this.prismaService.account.findUnique({
       where: { customerId, deletedAt: null },
     });
   }
 
   async updateStatus(id: string, isActive: boolean): Promise<void> {
-    await this.prisma.account.update({
+    await this.prismaService.account.update({
       where: { id },
       data: { isActive },
     });

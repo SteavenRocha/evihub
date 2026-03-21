@@ -7,7 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const globalPrefix = 'api/v2';
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 3001;
 
   // Filter for Prisma exceptions
   const { httpAdapter } = app.get(HttpAdapterHost);
