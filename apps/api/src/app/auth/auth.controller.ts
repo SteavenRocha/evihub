@@ -1,10 +1,10 @@
-import { Controller, HttpCode, Post, Body, UseGuards, HttpStatus } from '@nestjs/common';
+import { Controller, HttpCode, Post, Body, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import type { User } from '@evihub/db';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+import { Refresh } from './decorators/refresh.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -25,10 +25,9 @@ export class AuthController {
         return this.authService.logout(userId);
     }
 
-    @Public()
+    @Refresh()
     @Post('refresh')
     @HttpCode(HttpStatus.OK)
-    @UseGuards(JwtRefreshGuard)
     refresh(@CurrentUser() user: User) {
         return this.authService.refresh(user);
     }

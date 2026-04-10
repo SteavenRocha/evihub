@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAccountDto } from './dto/create-account.dto';
-import { UpdateAccountDto } from './dto/update-account.dto';
 import { PrismaService } from '@evihub/db';
 
 @Injectable()
@@ -13,9 +12,7 @@ export class AccountsService {
   async create(createAccountDto: CreateAccountDto) {
     return this.prismaService.account.create({
       data: {
-        name: createAccountDto.name,
         customerId: createAccountDto.customerId,
-        ...(createAccountDto.isActive !== undefined && { isActive: createAccountDto.isActive }),
       },
     });
   }

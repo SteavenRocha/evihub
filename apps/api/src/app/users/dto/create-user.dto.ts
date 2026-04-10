@@ -1,12 +1,17 @@
 
-import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsString, IsUUID, Matches, MaxLength, MinLength } from 'class-validator';
 import { Role } from '@evihub/db';
 
 export class CreateUserDto {
     @IsString()
     @IsNotEmpty()
-    @MaxLength(100)
-    name!: string;
+    @MaxLength(255)
+    firstName!: string;
+
+    @IsString()
+    @IsNotEmpty()
+    @MaxLength(255)
+    lastName!: string;
 
     @IsEmail()
     @IsNotEmpty()
@@ -29,8 +34,4 @@ export class CreateUserDto {
     @IsUUID()
     @IsNotEmpty()
     accountId!: string;
-
-    @IsBoolean()
-    @IsOptional()
-    isActive?: boolean;
 }

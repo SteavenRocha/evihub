@@ -6,7 +6,6 @@ import { Response } from 'express';
 @Catch(Prisma.PrismaClientKnownRequestError)
 export class PrismaClientExceptionFilter extends BaseExceptionFilter {
     override catch(exception: Prisma.PrismaClientKnownRequestError, host: ArgumentsHost) {
-        console.log('PRISMA ERROR META:', exception);
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
 

@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { PrismaService, User } from '@evihub/db';
+import { Prisma, PrismaService, User } from '@evihub/db';
 import { hashData } from '../common/helpers/hash.helper';
+import { BuildQueryDto } from '../common/dto/build-query.dto';
+import { paginate } from '../common/helpers/paginator';
+import { sanitizeUser } from '../common/helpers/sanitize-user.helper';
 
 @Injectable()
 export class UsersService {
@@ -12,22 +14,45 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const passwordHash = await hashData(createUserDto.password);
-    return this.prismaService.user.create({
+
+    const saved = await this.prismaService.user.create({
       data: {
-        name: createUserDto.name,
+        firstName: createUserDto.firstName,
+        lastName: createUserDto.lastName,
         email: createUserDto.email,
         password: passwordHash,
         role: createUserDto.role,
         accountId: createUserDto.accountId,
-        ...(createUserDto.isActive !== undefined && { isActive: createUserDto.isActive }),
       },
     });
+
+    return sanitizeUser(saved);
   }
 
-  async findAll(accountId: string) {
-    return this.prismaService.user.findMany({
-      where: { accountId, deletedAt: null },
+  async findAllByAccount(accountId: string, buildQueryDto: BuildQueryDto) {
+    const { search } = buildQueryDto;
+
+    const where: Prisma.UserWhereInput = {
+      accountId,
+      deletedAt: null,
+      ...(search && {
+        OR: [
+          { email: { contains: search, mode: 'insensitive' } },
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
+    };
+
+    const result = await paginate<User>(this.prismaService.user, buildQueryDto, {
+      where,
+      orderBy: { createdAt: 'desc' },
     });
+
+    return {
+      ...result,
+      data: result.data.map(sanitizeUser),
+    };
   }
 
   async findById(id: string): Promise<User | null> {
