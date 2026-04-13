@@ -2,7 +2,6 @@
   "name": "@evihub/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
   "private": true,
   "dependencies": {
     "@google-cloud/vision": "^5.3.5",
@@ -49,7 +48,7 @@
     "@types/multer": "^2.1.0",
     "@types/node": "20.19.9",
     "@types/passport-jwt": "^4.0.1",
-    "@types/pg": "^8.18.0",
+    "@types/pg": "^8.20.0",
     "eslint": "^9.8.0",
     "eslint-config-prettier": "^10.0.0",
     "h3": "^1.8.2",
@@ -59,7 +58,7 @@
     "prettier": "~3.6.2",
     "prisma": "^7.5.0",
     "tslib": "^2.3.0",
-    "typescript": "~5.9.2",
+    "typescript": "^6.0.2",
     "typescript-eslint": "^8.40.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
@@ -70,5 +69,6 @@
     "packages/*",
     "apps/*",
     "libs/shared/*"
-  ]
+  ],
+  "packageManager": "yarn@4.13.0"
 }
