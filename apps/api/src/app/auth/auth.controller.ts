@@ -1,4 +1,4 @@
-import { Controller, HttpCode, Post, Body, HttpStatus } from '@nestjs/common';
+import { Controller, HttpCode, Post, Body, HttpStatus, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import type { User } from '@evihub/db';
@@ -17,6 +17,11 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     login(@Body() loginDto: LoginDto) {
         return this.authService.login(loginDto);
+    }
+
+    @Get('me')
+    getMe(@CurrentUser() user: User) {
+        return user;
     }
 
     @Post('logout')

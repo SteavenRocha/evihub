@@ -4,6 +4,7 @@ import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { JwtPayload } from "../interfaces/jwt-payload.interface";
 import { UsersService } from "../../users/users.service";
+import { sanitizeUser } from "../../common/helpers/sanitize-user.helper";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -25,6 +26,6 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
             throw new UnauthorizedException('User is inactive or not found');
         }
 
-        return user;
+        return sanitizeUser(user);
     }
 }
