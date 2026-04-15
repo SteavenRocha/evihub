@@ -1981,7 +1981,7 @@ __metadata:
     clsx: "npm:^2.1.1"
     lucide-vue-next: "npm:^1.0.0"
     pinia: "npm:^3.0.4"
-    reka-ui: "npm:^2.9.5"
+    reka-ui: "npm:^2.9.6"
     shadcn-nuxt: "npm:^2.6.0"
     tailwind-merge: "npm:^3.5.0"
     tailwindcss: "npm:^4.2.2"
@@ -17488,9 +17488,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"reka-ui@npm:^2.9.5":
-  version: 2.9.5
-  resolution: "reka-ui@npm:2.9.5"
+"reka-ui@npm:^2.9.6":
+  version: 2.9.6
+  resolution: "reka-ui@npm:2.9.6"
   dependencies:
     "@floating-ui/dom": "npm:^1.6.13"
     "@floating-ui/vue": "npm:^1.1.6"
@@ -17504,7 +17504,7 @@ __metadata:
     ohash: "npm:^2.0.11"
   peerDependencies:
     vue: ">= 3.4.0"
-  checksum: 10c0/ab6530eb6797fc32c7e657ebf44bf1729132216bd820d2c47f187d20046817451302aff84deaa61368a27d751df61c67dec5dd96bcd1730dce175fee43242f31
+  checksum: 10c0/ae1d34d09f43cfd98ef08085f81ba334bd5fa8df3c4145e51aeb4cbd8d35fd3a4f320502654621085719753984b11c81ced1e780665979ef3b0bf0ec6a229049
   languageName: node
   linkType: hard
 

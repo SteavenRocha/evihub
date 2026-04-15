@@ -1,5 +1,11 @@
 <script setup lang="ts">
 import LoginForm from "@/components/blocks/LoginForm.vue"
+
+useHead({ title: 'Login | Evihub' })
+
+definePageMeta({
+    layout: false,
+})
 </script>
 
 <template>
