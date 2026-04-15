@@ -57,8 +57,11 @@ model PaymentEvidence {
   amount      Decimal
   currency    String         @default("PEN")
   paymentDate DateTime       @map("payment_date")
+  paymentTime String?        @map("payment_time")
   bank        String?
   reference   String?
+  recipient   String?
+  isLegible   Boolean        @default(true) @map("is_legible")
   imageUrl    String?        @map("image_url")
   ocrRaw      Json?          @map("ocr_raw")
   status      EvidenceStatus @default(PENDING)

@@ -5,6 +5,7 @@ import { PrismaClientExceptionFilter } from './app/common/filters/prisma-excepti
 import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
   const globalPrefix = 'api/v2';
@@ -33,9 +34,7 @@ async function bootstrap() {
 
   await app.listen(port);
 
-  Logger.log(
-    `Application is running on: http://localhost:${port}/${globalPrefix}`,
-  );
+  logger.log(`Application is running on: http://localhost:${port}/${globalPrefix}`);
 }
 
 bootstrap();

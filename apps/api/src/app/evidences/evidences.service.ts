@@ -12,11 +12,15 @@ export class EvidencesService {
     private readonly ocrService: OcrService,
   ) { }
 
-  async scan(file: Express.Multer.File): Promise<OcrResult & { imageUrl: string }> {
+  async scan(file: Express.Multer.File): Promise<OcrResult> {
     const imageBuffer = readFileSync(file.path);
     const ocrResult = await this.ocrService.extractFromImage(imageBuffer);
     const imageUrl = `/uploads/${file.filename}`;
-    return { ...ocrResult, imageUrl };
+
+    return {
+      ...ocrResult,
+      imageUrl
+    };
   }
 
   async create(dto: CreateEvidenceDto, user: User): Promise<PaymentEvidence> {

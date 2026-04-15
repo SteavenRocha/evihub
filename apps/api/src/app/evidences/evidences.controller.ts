@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { EvidencesService } from './evidences.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage, memoryStorage } from 'multer';
+import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { CreateEvidenceDto } from './dto/create-evidence.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
