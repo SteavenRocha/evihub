@@ -7,8 +7,8 @@ import { CreateEvidenceDto } from './dto/create-evidence.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PaymentEvidence, Role, type User } from '@evihub/db';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { BuildQueryDto } from '../common/dto/build-query.dto';
 import { PaginatedResult } from '../common/interfaces/paginated.interface';
+import { FilterEvidenceDto } from './dto/filter-evidence.dto';
 
 @Controller('evidences')
 export class EvidencesController {
@@ -51,9 +51,9 @@ export class EvidencesController {
   @Get()
   findAll(
     @CurrentUser() user: User,
-    @Query() buildQueryDto: BuildQueryDto
+    @Query() filterEvidenceDto: FilterEvidenceDto
   ): Promise<PaginatedResult<PaymentEvidence>> {
-    return this.evidencesService.findAll(user, buildQueryDto);
+    return this.evidencesService.findAll(user, filterEvidenceDto);
   }
 
   @Get(':id')

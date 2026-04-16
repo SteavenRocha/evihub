@@ -4,9 +4,9 @@ import { OcrService } from '../ocr/ocr.service';
 import { CreateEvidenceDto } from './dto/create-evidence.dto';
 import { OcrResult } from '../ocr/interfaces/ocr-result.interface';
 import { readFileSync } from 'fs';
-import { BuildQueryDto } from '../common/dto/build-query.dto';
 import { paginate } from '../common/helpers/paginator';
 import { PaginatedResult } from '../common/interfaces/paginated.interface';
+import { FilterEvidenceDto } from './dto/filter-evidence.dto';
 
 @Injectable()
 export class EvidencesService {
@@ -41,22 +41,24 @@ export class EvidencesService {
     });
   }
 
-  async findAll(user: User, buildQueryDto: BuildQueryDto): Promise<PaginatedResult<PaymentEvidence>> {
-    const { search } = buildQueryDto;
+  async findAll(user: User, filterEvidenceDto: FilterEvidenceDto): Promise<PaginatedResult<PaymentEvidence>> {
+    const { status, bank, currency, dateFrom, dateTo } = filterEvidenceDto;
 
     const where: Prisma.PaymentEvidenceWhereInput = {
       accountId: user.accountId,
       deletedAt: null,
-      ...(search && {
-        OR: [
-          { reference: { contains: search, mode: 'insensitive' } },
-          { recipient: { contains: search, mode: 'insensitive' } },
-          { bank: { contains: search, mode: 'insensitive' } },
-        ],
+      ...(status && { status }),
+      ...(currency && { currency }),
+      ...(bank && { bank: { equals: bank, mode: 'insensitive' } }),
+      ...((dateFrom || dateTo) && {
+        paymentDate: {
+          ...(dateFrom && { gte: new Date(dateFrom) }),
+          ...(dateTo && { lte: new Date(dateTo) }),
+        },
       }),
-    };
+    }
 
-    const result = await paginate<PaymentEvidence>(this.prismaService.paymentEvidence, buildQueryDto, {
+    const result = await paginate<PaymentEvidence>(this.prismaService.paymentEvidence, filterEvidenceDto, {
       where,
       orderBy: { createdAt: 'desc' },
     });

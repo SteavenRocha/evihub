@@ -54,7 +54,7 @@ model PaymentEvidence {
   id          String         @id @default(uuid())
   accountId   String         @map("account_id")
   uploadedBy  String         @map("uploaded_by")
-  amount      Decimal
+  amount      Decimal        @db.Decimal(10, 2)
   currency    String         @default("PEN")
   paymentDate DateTime       @map("payment_date")
   bank        String?
