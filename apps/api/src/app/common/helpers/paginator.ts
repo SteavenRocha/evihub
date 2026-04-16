@@ -1,5 +1,6 @@
 import { BadRequestException } from "@nestjs/common";
 import { BuildQueryDto } from "../dto/build-query.dto";
+import { PaginatedResult } from "../interfaces/paginated.interface";
 
 export async function paginate<T>(
     model: any,
@@ -9,7 +10,7 @@ export async function paginate<T>(
         include?: any;
         orderBy?: any;
     } = {}
-): Promise<{ data: T[]; meta: any }> {
+): Promise<PaginatedResult<T>> {
     const { limit = 10, page = 1, search } = buildQueryDto;
     const skip = (page - 1) * limit;
 
@@ -38,11 +39,11 @@ export async function paginate<T>(
         data,
         meta: {
             total,
-            page,
-            limit,
-            totalPages,
-            hasNextPage: page < totalPages,
-            hasPrevPage: page > 1,
+            currentPage: page,
+            perPage: limit,
+            lastPage: totalPages,
+            next: page < totalPages ? page + 1 : null,
+            prev: page > 1 ? page - 1 : null,
         },
     };
 }

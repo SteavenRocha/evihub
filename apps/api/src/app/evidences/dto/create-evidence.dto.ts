@@ -1,4 +1,4 @@
-import { IsDateString, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateEvidenceDto {
@@ -11,22 +11,40 @@ export class CreateEvidenceDto {
     @IsNotEmpty()
     currency!: string;
 
-    @IsDateString()
+    @IsString()
     @IsNotEmpty()
     paymentDate!: string;
 
     @IsString()
-    @IsOptional()
-    bank?: string;
+    @IsNotEmpty()
+    paymentTime!: string;
 
     @IsString()
-    @IsOptional()
-    reference?: string;
+    @IsNotEmpty()
+    bank!: string;
+
+    @IsString()
+    @IsNotEmpty()
+    reference!: string;
+
+    @IsString()
+    @IsNotEmpty()
+    recipient!: string;
 
     @IsString()
     @IsNotEmpty()
     imageUrl!: string;
 
+    @IsString()
     @IsOptional()
-    ocrRaw?: any;
+    ocrRaw?: string;
+
+    @IsBoolean()
+    @IsNotEmpty()
+    @Type(() => Boolean)
+    isLegible!: boolean;
+
+    @IsString()
+    @IsOptional()
+    description?: string;
 }

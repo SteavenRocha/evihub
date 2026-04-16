@@ -57,7 +57,6 @@ model PaymentEvidence {
   amount      Decimal
   currency    String         @default("PEN")
   paymentDate DateTime       @map("payment_date")
-  paymentTime String?        @map("payment_time")
   bank        String?
   reference   String?
   recipient   String?
@@ -65,6 +64,7 @@ model PaymentEvidence {
   imageUrl    String?        @map("image_url")
   ocrRaw      Json?          @map("ocr_raw")
   status      EvidenceStatus @default(PENDING)
+  description String?
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
   deletedAt   DateTime?      @map("deleted_at")

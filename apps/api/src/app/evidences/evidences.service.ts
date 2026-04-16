@@ -1,9 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PaymentEvidence, PrismaService, type User } from '@evihub/db';
+import { PaymentEvidence, Prisma, PrismaService, type User } from '@evihub/db';
 import { OcrService } from '../ocr/ocr.service';
 import { CreateEvidenceDto } from './dto/create-evidence.dto';
 import { OcrResult } from '../ocr/interfaces/ocr-result.interface';
 import { readFileSync } from 'fs';
+import { BuildQueryDto } from '../common/dto/build-query.dto';
+import { paginate } from '../common/helpers/paginator';
+import { PaginatedResult } from '../common/interfaces/paginated.interface';
 
 @Injectable()
 export class EvidencesService {
@@ -24,29 +27,41 @@ export class EvidencesService {
   }
 
   async create(dto: CreateEvidenceDto, user: User): Promise<PaymentEvidence> {
+    const { paymentDate, paymentTime, ...rest } = dto;
+
+    const fullDateTime = this.parseDate(paymentDate, paymentTime);
+
     return this.prismaService.paymentEvidence.create({
       data: {
+        ...rest,
+        paymentDate: fullDateTime,
         accountId: user.accountId,
         uploadedBy: user.id,
-        amount: dto.amount,
-        currency: dto.currency,
-        paymentDate: new Date(dto.paymentDate),
-        bank: dto.bank,
-        reference: dto.reference,
-        imageUrl: dto.imageUrl,
-        ocrRaw: dto.ocrRaw,
       },
     });
   }
 
-  async findAll(user: User): Promise<PaymentEvidence[]> {
-    return this.prismaService.paymentEvidence.findMany({
-      where: {
-        accountId: user.accountId,
-        deletedAt: null,
-      },
+  async findAll(user: User, buildQueryDto: BuildQueryDto): Promise<PaginatedResult<PaymentEvidence>> {
+    const { search } = buildQueryDto;
+
+    const where: Prisma.PaymentEvidenceWhereInput = {
+      accountId: user.accountId,
+      deletedAt: null,
+      ...(search && {
+        OR: [
+          { reference: { contains: search, mode: 'insensitive' } },
+          { recipient: { contains: search, mode: 'insensitive' } },
+          { bank: { contains: search, mode: 'insensitive' } },
+        ],
+      }),
+    };
+
+    const result = await paginate<PaymentEvidence>(this.prismaService.paymentEvidence, buildQueryDto, {
+      where,
       orderBy: { createdAt: 'desc' },
     });
+
+    return result;
   }
 
   async findById(id: string, user: User): Promise<PaymentEvidence> {
@@ -68,5 +83,27 @@ export class EvidencesService {
       where: { id },
       data: { deletedAt: new Date() },
     });
+  }
+
+  private parseDate(dateStr: string, timeStr: string): Date {
+    try {
+      const [day, month, year] = dateStr.split('-').map(Number);
+
+      const timeMatches = timeStr.match(/(\d+):(\d+)/);
+      if (!timeMatches) return new Date(year, month - 1, day);
+
+      let hours = parseInt(timeMatches[1]);
+      const minutes = parseInt(timeMatches[2]);
+
+      const isPM = timeStr.toLowerCase().includes('p');
+
+      if (isPM && hours < 12) hours += 12;
+      if (!isPM && hours === 12) hours = 0;
+
+      return new Date(year, month - 1, day, hours, minutes, 0);
+    } catch (error) {
+      const parts = dateStr.split('-').map(Number);
+      return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
   }
 }

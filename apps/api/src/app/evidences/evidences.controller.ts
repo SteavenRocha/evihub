@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { EvidencesService } from './evidences.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -7,6 +7,8 @@ import { CreateEvidenceDto } from './dto/create-evidence.dto';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PaymentEvidence, Role, type User } from '@evihub/db';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { BuildQueryDto } from '../common/dto/build-query.dto';
+import { PaginatedResult } from '../common/interfaces/paginated.interface';
 
 @Controller('evidences')
 export class EvidencesController {
@@ -47,8 +49,11 @@ export class EvidencesController {
   }
 
   @Get()
-  findAll(@CurrentUser() user: User): Promise<PaymentEvidence[]> {
-    return this.evidencesService.findAll(user);
+  findAll(
+    @CurrentUser() user: User,
+    @Query() buildQueryDto: BuildQueryDto
+  ): Promise<PaginatedResult<PaymentEvidence>> {
+    return this.evidencesService.findAll(user, buildQueryDto);
   }
 
   @Get(':id')
