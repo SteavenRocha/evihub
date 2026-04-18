@@ -1,34 +1,13 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('ADMIN', 'VIEWER');
 
-  - You are about to drop the `Account` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `PaymentEvidence` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `User` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE "PaymentEvidence" DROP CONSTRAINT "PaymentEvidence_accountId_fkey";
-
--- DropForeignKey
-ALTER TABLE "PaymentEvidence" DROP CONSTRAINT "PaymentEvidence_uploadedBy_fkey";
-
--- DropForeignKey
-ALTER TABLE "User" DROP CONSTRAINT "User_accountId_fkey";
-
--- DropTable
-DROP TABLE "Account";
-
--- DropTable
-DROP TABLE "PaymentEvidence";
-
--- DropTable
-DROP TABLE "User";
+-- CreateEnum
+CREATE TYPE "EvidenceStatus" AS ENUM ('PENDING', 'VERIFIED', 'REJECTED');
 
 -- CreateTable
 CREATE TABLE "accounts" (
     "id" TEXT NOT NULL,
-    "erp_customer_id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
+    "customer_id" TEXT NOT NULL,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
@@ -41,7 +20,8 @@ CREATE TABLE "accounts" (
 CREATE TABLE "users" (
     "id" TEXT NOT NULL,
     "account_id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
+    "first_name" TEXT NOT NULL,
+    "last_name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "refresh_token" TEXT,
@@ -59,14 +39,17 @@ CREATE TABLE "payment_evidences" (
     "id" TEXT NOT NULL,
     "account_id" TEXT NOT NULL,
     "uploaded_by" TEXT NOT NULL,
-    "amount" DECIMAL(65,30) NOT NULL,
+    "amount" DECIMAL(10,2) NOT NULL,
     "currency" TEXT NOT NULL DEFAULT 'PEN',
     "payment_date" TIMESTAMP(3) NOT NULL,
     "bank" TEXT,
     "reference" TEXT,
-    "image_url" TEXT,
+    "recipient" TEXT,
+    "is_legible" BOOLEAN NOT NULL DEFAULT true,
+    "image_key" TEXT,
     "ocr_raw" JSONB,
     "status" "EvidenceStatus" NOT NULL DEFAULT 'PENDING',
+    "description" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "deleted_at" TIMESTAMP(3),
@@ -75,7 +58,7 @@ CREATE TABLE "payment_evidences" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "accounts_erp_customer_id_key" ON "accounts"("erp_customer_id");
+CREATE UNIQUE INDEX "accounts_customer_id_key" ON "accounts"("customer_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");

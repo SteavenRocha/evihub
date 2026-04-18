@@ -33,7 +33,7 @@ export class CreateEvidenceDto {
 
     @IsString()
     @IsNotEmpty()
-    imageUrl!: string;
+    imageKey!: string;
 
     @IsString()
     @IsOptional()

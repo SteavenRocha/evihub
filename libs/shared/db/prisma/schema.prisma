@@ -61,7 +61,7 @@ model PaymentEvidence {
   reference   String?
   recipient   String?
   isLegible   Boolean        @default(true) @map("is_legible")
-  imageUrl    String?        @map("image_url")
+  imageKey    String?        @map("image_key")
   ocrRaw      Json?          @map("ocr_raw")
   status      EvidenceStatus @default(PENDING)
   description String?

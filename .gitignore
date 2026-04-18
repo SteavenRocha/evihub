@@ -54,4 +54,4 @@ libs/shared/db/generated
 !.yarn/versions
 
 # Uploads
-/uploads
+apps/api/uploads/

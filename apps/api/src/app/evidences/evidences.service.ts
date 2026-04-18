@@ -18,11 +18,11 @@ export class EvidencesService {
   async scan(file: Express.Multer.File): Promise<OcrResult> {
     const imageBuffer = readFileSync(file.path);
     const ocrResult = await this.ocrService.extractFromImage(imageBuffer);
-    const imageUrl = `/uploads/${file.filename}`;
+    const imageKey = `/uploads/${file.filename}`;
 
     return {
       ...ocrResult,
-      imageUrl
+      imageKey
     };
   }
 
@@ -85,6 +85,14 @@ export class EvidencesService {
       where: { id },
       data: { deletedAt: new Date() },
     });
+  }
+
+  /* OBTENER IMAGEN */
+  async findByImageKey(imageKey: string, accountId: string) {
+    return this.prismaService.paymentEvidence.findFirst({
+      where: { imageKey, accountId, deletedAt: null },
+      select: { id: true },
+    })
   }
 
   private parseDate(dateStr: string, timeStr: string): Date {
