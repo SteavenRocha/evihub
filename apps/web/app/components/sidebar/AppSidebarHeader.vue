@@ -39,5 +39,4 @@ import { Badge } from '@/components/ui/badge'
             </SidebarMenuItem>
         </SidebarMenu>
     </SidebarHeader>
-    <SidebarSeparator />
 </template>

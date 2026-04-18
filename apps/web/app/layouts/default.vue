@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { SidebarProvider, SidebarTrigger, SidebarInset, SidebarSeparator } from '@/components/ui/sidebar'
+import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/sidebar/AppSidebar.vue'
 </script>
 
 <template>
     <SidebarProvider>
         <AppSidebar />
-        <SidebarInset>
+        <SidebarInset class="min-w-0">
             <!-- Topbar -->
-            <header class="flex h-14 shrink-0 items-center gap-2 px-4">
+            <header class="bg-background sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b px-4">
                 <SidebarTrigger class="-ml-1 cursor-pointer" />
                 <div class="h-4 w-px bg-border" />
                 <!-- Breadcrumb via slot o composable -->
@@ -18,12 +18,12 @@ import AppSidebar from '@/components/sidebar/AppSidebar.vue'
                 </div>
             </header>
 
-            <SidebarSeparator />
-
             <!-- Page content -->
-            <main class="flex flex-1 flex-col gap-4 p-4">
-                <slot />
-            </main>
+            <div class="flex flex-1 flex-col gap-4 px-6 py-8 overflow-y-auto">
+                <div class="w-full max-w-7xl mx-auto">
+                    <slot />
+                </div>
+            </div>
         </SidebarInset>
     </SidebarProvider>
 </template>
