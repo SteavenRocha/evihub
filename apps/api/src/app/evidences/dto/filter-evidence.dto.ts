@@ -17,9 +17,17 @@ export class FilterEvidenceDto extends BuildQueryDto {
 
     @IsOptional()
     @IsDateString()
-    dateFrom?: string
+    paymentDateFrom?: string
 
     @IsOptional()
     @IsDateString()
-    dateTo?: string
+    paymentDateTo?: string
+
+    @IsOptional()
+    @IsDateString()
+    createdDateFrom?: string
+
+    @IsOptional()
+    @IsDateString()
+    createdDateTo?: string
 }

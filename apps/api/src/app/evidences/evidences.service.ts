@@ -42,7 +42,11 @@ export class EvidencesService {
   }
 
   async findAll(user: User, filterEvidenceDto: FilterEvidenceDto): Promise<PaginatedResult<PaymentEvidence>> {
-    const { status, bank, currency, dateFrom, dateTo } = filterEvidenceDto;
+    const {
+      status, bank, currency,
+      paymentDateFrom, paymentDateTo,
+      createdDateFrom, createdDateTo
+    } = filterEvidenceDto;
 
     const where: Prisma.PaymentEvidenceWhereInput = {
       accountId: user.accountId,
@@ -50,10 +54,20 @@ export class EvidencesService {
       ...(status && { status }),
       ...(currency && { currency }),
       ...(bank && { bank: { equals: bank, mode: 'insensitive' } }),
-      ...((dateFrom || dateTo) && {
+      ...((paymentDateFrom || paymentDateTo) && {
         paymentDate: {
-          ...(dateFrom && { gte: new Date(dateFrom) }),
-          ...(dateTo && { lte: new Date(dateTo) }),
+          ...(paymentDateFrom && { gte: new Date(paymentDateFrom) }),
+          ...(paymentDateTo && {
+            lte: new Date(new Date(paymentDateTo).setHours(23, 59, 59, 999))
+          }),
+        },
+      }),
+      ...((createdDateFrom || createdDateTo) && {
+        createdAt: {
+          ...(createdDateFrom && { gte: new Date(createdDateFrom) }),
+          ...(createdDateTo && {
+            lte: new Date(new Date(createdDateTo).setHours(23, 59, 59, 999))
+          }),
         },
       }),
     }

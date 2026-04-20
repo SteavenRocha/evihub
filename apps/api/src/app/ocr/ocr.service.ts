@@ -57,7 +57,7 @@ export class OcrService {
                             - currency: Siempre "PEN", a menos que el comprobante indique "USD" o "$" explícitamente.
                             - paymentDate: Fecha de la operación en formato DD-MM-YYYY (ej: 15-04-2026). No uses la fecha actual.
                             - paymentTime: Hora exacta de la operación tal cual aparece en la imagen (ej: "01:59 p. m.", "14:30:05", "11:20 am").
-                            - bank: Nombre de la app emisora o entidad bancaria (ej: Yape, Plin, BCP, Interbank, BBVA, Scotiabank, etc.).
+                            - bank: Nombre de la app emisora (ej: Yape, Plin, BCP).
                             - reference: Número de operación o ID de transacción completo.
                             - recipient: Nombre completo de la persona o empresa que recibe el dinero (el titular del destino).
                             - ocrRaw: Texto concatenado de los puntos clave detectados, separados por " | ". 
