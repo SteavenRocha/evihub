@@ -3,19 +3,23 @@ import type { EvidenceFilters, Evidence } from '../types/evidence'
 import type { PaginationMeta } from '../types/pagination'
 
 export function useEvidence() {
-    const { getAll } = useEvidenceApi()
+    const { getAll, getImage } = useEvidenceApi()
 
     const isLoading = ref(false)
+    const isLoadingImage = ref(false)
     const error = ref<string | null>(null)
     const items = ref<Evidence[]>([])
     const meta = ref<PaginationMeta | null>(null)
+    const imageCache = ref<Record<string, string>>({})
 
     const filters = ref<EvidenceFilters>({
         status: undefined,
         bank: undefined,
         currency: undefined,
-        dateFrom: undefined,
-        dateTo: undefined,
+        paymentDateFrom: undefined,
+        paymentDateTo: undefined,
+        createdDateFrom: undefined,
+        createdDateTo: undefined,
         paginationParams: {
             page: 1,
             limit: 10,
@@ -41,6 +45,25 @@ export function useEvidence() {
         }
     }
 
+    async function resolveImage(imageKey: string): Promise<string | null> {
+        if (!imageKey) return null
+
+        // Si ya está en caché, devuelve la URL sin hacer fetch
+        if (imageCache.value[imageKey]) return imageCache.value[imageKey]
+
+        isLoadingImage.value = true
+        try {
+            const blob = await getImage(imageKey)
+            const url = URL.createObjectURL(blob)
+            imageCache.value[imageKey] = url
+            return url
+        } catch {
+            return null
+        } finally {
+            isLoadingImage.value = false
+        }
+    }
+
     function applyFilters() {
         if (filters.value.paginationParams) {
             filters.value.paginationParams.page = 1;
@@ -48,8 +71,14 @@ export function useEvidence() {
         fetchList()
     }
 
-    function clearFilters() {
-        filters.value = { status: undefined, bank: '', currency: '', dateFrom: '', dateTo: '', paginationParams: { page: 1, limit: 10, search: '' } }
+    function clearFilters(onClear?: () => void) {
+        filters.value = {
+            status: undefined, bank: '', currency: '',
+            paymentDateFrom: undefined, paymentDateTo: undefined,
+            createdDateFrom: undefined, createdDateTo: undefined,
+            paginationParams: { page: 1, limit: 10, search: '' }
+        }
+        onClear?.()
         fetchList()
     }
 
@@ -63,8 +92,16 @@ export function useEvidence() {
         fetchList()
     }
 
+    function dispose() {
+        Object.values(imageCache.value).forEach(URL.revokeObjectURL)
+        imageCache.value = {}
+    }
+
+    onUnmounted(dispose)
+
     return {
         isLoading: readonly(isLoading),
+        isLoadingImage: readonly(isLoadingImage),
         error: readonly(error),
         items: readonly(items),
         meta: readonly(meta),
@@ -73,6 +110,7 @@ export function useEvidence() {
         totalPages,
         currentPage,
         fetchList,
+        resolveImage,
         applyFilters,
         clearFilters,
         goToPage,

@@ -3,7 +3,6 @@ import {
     SidebarHeader,
     SidebarMenu,
     SidebarMenuItem,
-    SidebarSeparator,
 } from '@/components/ui/sidebar'
 import { Badge } from '@/components/ui/badge'
 </script>

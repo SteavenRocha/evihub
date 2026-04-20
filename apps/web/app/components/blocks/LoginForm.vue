@@ -51,9 +51,6 @@ watch([() => form.email, () => form.password], () => {
                         <Field>
                             <div class="flex items-center">
                                 <FieldLabel for="password">Password</FieldLabel>
-                                <a href="#" class="ml-auto text-sm underline-offset-2 hover:underline">
-                                    ¿Olvidaste tu contraseña?
-                                </a>
                             </div>
                             <Input id="password" v-model="form.password" type="password" required
                                 autocomplete="current-password" />

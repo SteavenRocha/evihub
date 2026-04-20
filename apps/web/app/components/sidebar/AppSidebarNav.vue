@@ -37,14 +37,14 @@ const route = useRoute()
                         <span>{{ item.title }}</span>
                     </NuxtLink>
                 </SidebarMenuButton>
-                <SidebarMenuBadge v-if="item.badge">
+                <!-- <SidebarMenuBadge v-if="item.badge">
                     <Badge :variant="item.badgeVariant === 'warning' ? 'outline' : 'secondary'" :class="[
                         'h-5 px-1.5 font-mono text-[10px]',
                         item.badgeVariant === 'warning' && 'border-amber-300 bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
                     ]">
                         {{ item.badge }}
                     </Badge>
-                </SidebarMenuBadge>
+                </SidebarMenuBadge> -->
             </SidebarMenuItem>
         </SidebarMenu>
     </SidebarGroup>

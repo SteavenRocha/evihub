@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import {
-    Plus, Filter, X, Loader2,
-    ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
-    FileX, Eye, Landmark, DollarSign, Info
+    Plus, Filter, X, Loader2, ImageOff,
+    FileX, Eye, Landmark, DollarSign, Info, FileText, Download
 } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,35 +13,36 @@ import {
     Table, TableBody, TableCell,
     TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
-import DatePicker from '@/components/shared/DatePicker.vue'
-import type { EvidenceStatus } from '@/types/evidence'
+import DateRangeFilter, { type DateRangeValue } from '@/components/shared/DateRangeFilter.vue'
+import Pagination from '@/components/shared/Pagination.vue'
+import {
+    Dialog, DialogContent, DialogTitle, DialogDescription
+} from '@/components/ui/dialog'
+import { BANKS } from '~/constants/banks'
+import { EVIDENCE_STATUS } from '~/constants/evidence_status'
+import type { Evidence } from '~/types/evidence'
 
 definePageMeta({ layout: 'default' })
 
+useHead({ title: 'Comprobantes | Evihub' })
+
 const {
-    isLoading, error, items, meta,
+    isLoading, isLoadingImage, error, items, meta,
     filters, hasItems, totalPages, currentPage,
-    fetchList, applyFilters, clearFilters, goToPage,
+    fetchList, resolveImage, applyFilters, clearFilters, goToPage,
 } = useEvidence()
 
-const banks = ['BCP', 'BBVA', 'Interbank', 'Scotiabank', 'Yape', 'Plin', 'BanBif', 'Pichincha']
-
-const statusConfig: Record<EvidenceStatus, { label: string; class: string }> = {
-    PENDING: { label: 'Pendiente', class: 'border-amber-300 bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300' },
-    VERIFIED: { label: 'Verificado', class: 'border-green-300 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300' },
-    REJECTED: { label: 'Rechazado', class: 'border-red-300 bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300' },
-}
-
-const bankColors: Record<string, string> = {
-    BCP: '#1a67b5', BBVA: '#004a97', Interbank: '#00a651',
-    Scotiabank: '#8b1a1a', Yape: '#6c2d8c', Plin: '#00bcd4',
-    BanBif: '#e65100', Pichincha: '#d32f2f',
-}
-
 function formatDate(iso: string) {
-    return new Date(iso).toLocaleDateString('es-PE', {
-        day: '2-digit', month: 'short', year: 'numeric',
-    })
+    if (!iso) return '---';
+
+    return new Date(iso).toLocaleString('es-PE', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    }).replace('.', '');
 }
 
 function formatAmount(amount: string, currency: string) {
@@ -50,37 +50,57 @@ function formatAmount(amount: string, currency: string) {
     return `${symbol} ${parseFloat(amount).toFixed(2)}`
 }
 
-// Páginas visibles en el paginador
-const visiblePages = computed(() => {
-    const total = totalPages.value
-    const current = currentPage.value
-    const delta = 1
-    const pages: (number | '...')[] = []
-
-    for (let i = 1; i <= total; i++) {
-        if (i === 1 || i === total || (i >= current - delta && i <= current + delta)) {
-            pages.push(i)
-        } else if (pages[pages.length - 1] !== '...') {
-            pages.push('...')
-        }
-    }
-    return pages
-})
-
-const from = computed(() => {
-    if (!meta.value || meta.value.total === 0) return 0
-    return (meta.value.currentPage - 1) * meta.value.perPage + 1
-})
-
-const to = computed(() => {
-    if (!meta.value || meta.value.total === 0) return 0
-    // Calculamos el límite superior teórico
-    const upperLimit = meta.value.currentPage * meta.value.perPage
-    // Nos aseguramos de no mostrar un número mayor al total de registros
-    return upperLimit > meta.value.total ? meta.value.total : upperLimit
-})
+function handleClearFilters() {
+    clearFilters(() => {
+        dateRange.value = null
+    })
+}
 
 onMounted(fetchList)
+
+/* Filters */
+const dateRange = ref<DateRangeValue | null>(null)
+
+watch(
+    () => [filters.value.bank, filters.value.currency, filters.value.status],
+    () => applyFilters()
+)
+
+watch(dateRange, (val) => {
+    if (!val) {
+        filters.value.paymentDateFrom = undefined
+        filters.value.paymentDateTo = undefined
+        filters.value.createdDateFrom = undefined
+        filters.value.createdDateTo = undefined
+    } else if (val.dateType === 'payment') {
+        filters.value.paymentDateFrom = val.from
+        filters.value.paymentDateTo = val.to
+        filters.value.createdDateFrom = undefined
+        filters.value.createdDateTo = undefined
+    } else {
+        filters.value.createdDateFrom = val.from
+        filters.value.createdDateTo = val.to
+        filters.value.paymentDateFrom = undefined
+        filters.value.paymentDateTo = undefined
+    }
+    applyFilters()
+})
+
+/* Modal */
+const isModalOpen = ref(false)
+const selectedItem = ref<Evidence | null>(null)
+const currentImage = ref<string | null>(null)
+
+const openDetail = async (item: Evidence) => {
+    selectedItem.value = item
+    currentImage.value = null
+    isModalOpen.value = true
+
+    if (item.imageKey) {
+        const url = await resolveImage(item.imageKey)
+        currentImage.value = url
+    }
+}
 </script>
 
 <template>
@@ -113,13 +133,24 @@ onMounted(fetchList)
                 <Landmark class="h-4 w-4 text-muted-foreground group-hover:text-accent-foreground" />
 
                 <div class="group-hover:text-accent-foreground">
-                    <SelectValue placeholder="Banco" />
+                    <SelectValue placeholder="Método" />
                 </div>
             </SelectTrigger>
 
             <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem v-for="b in banks" :key="b" :value="b">{{ b }}</SelectItem>
+                <SelectItem value="all">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full shrink-0 bg-slate-400" />
+                        <span>Todos los métodos</span>
+                    </div>
+                </SelectItem>
+
+                <SelectItem v-for="(b, id) in BANKS" :key="id" :value="id">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full shrink-0" :style="{ background: b?.color ?? '#888' }" />
+                        <span>{{ b?.name }}</span>
+                    </div>
+                </SelectItem>
             </SelectContent>
         </Select>
 
@@ -156,20 +187,17 @@ onMounted(fetchList)
             </SelectContent>
         </Select>
 
-        <!-- Date from -->
-        <DatePicker v-model="filters.dateFrom" />
+        <!-- Date Filter -->
+        <DateRangeFilter v-model="dateRange" />
 
-        <!-- Date to -->
-        <DatePicker v-model="filters.dateTo" />
-
-        <Button size="sm" variant="ghost" class="h-9 text-muted-foreground cursor-pointer" @click="clearFilters">
+        <Button size="sm" variant="ghost" class="h-9 text-muted-foreground cursor-pointer" @click="handleClearFilters">
             <X class="h-3.5 w-3.5" />
             Limpiar filtros
         </Button>
     </div>
 
     <!-- Table -->
-    <div class="border border-border rounded-lg overflow-hidden">
+    <div class="border border-border rounded-lg overflow-clip">
         <!-- Loading -->
         <div v-if="isLoading" class="flex items-center justify-center h-52 gap-3">
             <Loader2 class="h-5 w-5 animate-spin text-muted-foreground" />
@@ -185,121 +213,226 @@ onMounted(fetchList)
 
         <!-- Data -->
         <template v-else>
-            <Table>
-                <TableHeader class="bg-muted">
-                    <TableRow>
-                        <TableHead class="w-48">Comprobante</TableHead>
-                        <TableHead>Monto</TableHead>
-                        <TableHead>Metodo de pago</TableHead>
-                        <TableHead>Fecha pago</TableHead>
-                        <TableHead>Fecha registro</TableHead>
-                        <TableHead>Estado</TableHead>
-                        <TableHead></TableHead>
-                        <!-- <TableHead>Acción</TableHead> -->
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    <TableRow v-for="item in items" :key="item.id" class="text-sm">
-                        <!-- Thumbnail -->
-                        <TableCell class="flex items-center gap-4">
-                            <div
-                                class="w-10 h-10 rounded-md border border-border bg-muted overflow-hidden flex items-center justify-center">
+            <div class="personalized-scroll overflow-y-auto max-h-[60vh]">
+                <Table>
+                    <TableHeader class="sticky top-0 z-10 bg-muted">
+                        <TableRow>
+                            <TableHead class="w-48">Comprobante</TableHead>
+                            <TableHead>Monto</TableHead>
+                            <TableHead>Método de pago</TableHead>
+                            <TableHead>Fecha de pago</TableHead>
+                            <TableHead>Fecha de registro</TableHead>
+                            <TableHead>Estado</TableHead>
+                            <TableHead></TableHead>
+                            <!-- <TableHead>Acción</TableHead> -->
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        <TableRow v-for="item in items" :key="item.id" class="text-sm">
+                            <!-- Thumbnail -->
+                            <TableCell class="flex items-center gap-4">
+                                <!--  <div
+                                class="w-10 h-10 rounded-md border border-border bg-white overflow-hidden flex items-center justify-center shrink-0">
 
-                                <img v-if="item.imageUrl" :src="item.imageUrl" :alt="item.reference"
+                                <img v-if="banks[item.bank]?.urlImg" :src="banks[item.bank]?.urlImg"
+                                    :alt="banks[item.bank]?.name" class="w-full h-full object-cover" />
+
+                                <img v-else src="/assets/img/img-fallback.jpg" alt="Fallback Img"
                                     class="w-full h-full object-cover" />
-                                <span v-else class="text-[10px] text-muted-foreground font-mono">N/A</span>
-                            </div>
+                            </div> -->
 
-                            <p class="text-muted-foreground">{{ item.reference }}</p>
-                        </TableCell>
+                                <div class="flex flex-col">
+                                    <p class="font-medium text-sm">{{ item.reference }}</p>
+                                    <span class="text-[10px] text-muted-foreground uppercase">
+                                        {{ BANKS[item.bank]?.name ?? 'General' }}
+                                    </span>
+                                </div>
+                            </TableCell>
 
-                        <!-- Amount -->
-                        <TableCell class="font-mono font-medium">
-                            {{ formatAmount(item.amount, item.currency) }}
-                        </TableCell>
+                            <!-- Amount -->
+                            <TableCell class="font-mono font-medium">
+                                {{ formatAmount(item.amount, item.currency) }}
+                            </TableCell>
 
-                        <!-- Bank -->
-                        <TableCell>
-                            <div class="flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full shrink-0"
-                                    :style="{ background: bankColors[item.bank] ?? '#888' }" />
-                                {{ item.bank }}
-                            </div>
-                        </TableCell>
+                            <!-- Bank -->
+                            <TableCell>
+                                <div class="flex items-center gap-1.5 capitalize">
+                                    <span class="w-2 h-2 rounded-full shrink-0"
+                                        :style="{ background: BANKS[item.bank]?.color ?? '#888' }" />
+                                    {{ BANKS[item.bank]?.name ?? item.bank }}
+                                </div>
+                            </TableCell>
 
-                        <!-- Payment date -->
-                        <TableCell>
-                            {{ formatDate(item.paymentDate) }}
-                        </TableCell>
+                            <!-- Payment date -->
+                            <TableCell>
+                                {{ formatDate(item.paymentDate) }}
+                            </TableCell>
 
-                        <!-- Created at -->
-                        <TableCell>
-                            {{ formatDate(item.createdAt) }}
-                        </TableCell>
+                            <!-- Created at -->
+                            <TableCell>
+                                {{ formatDate(item.createdAt) }}
+                            </TableCell>
 
-                        <!-- Status -->
-                        <TableCell>
-                            <Badge variant="outline" :class="['text-[11px]', statusConfig[item.status]?.class]">
-                                {{ statusConfig[item.status]?.label }}
-                            </Badge>
-                        </TableCell>
+                            <!-- Status -->
+                            <TableCell>
+                                <Badge :class="['text-[11px]', EVIDENCE_STATUS[item.status]?.class]">
+                                    {{ EVIDENCE_STATUS[item.status]?.label }}
+                                </Badge>
+                            </TableCell>
 
-                        <!-- Action -->
-                        <TableCell>
-                            <Button variant="ghost" size="sm" as-child class="text-xs h-7">
-                                <NuxtLink :to="`/evidences/${item.id}`">
-                                    <Eye class="mr-1.5 h-3.5 w-3.5" />
+                            <!-- Action -->
+                            <TableCell>
+                                <Button variant="ghost" size="sm" class="text-xs h-7 cursor-pointer"
+                                    @click="openDetail(item)">
+                                    <Eye class="h-3.5 w-3.5" />
                                     Ver detalle
-                                </NuxtLink>
-                            </Button>
-                        </TableCell>
-                    </TableRow>
-                </TableBody>
-            </Table>
+                                </Button>
+                            </TableCell>
+                        </TableRow>
+                    </TableBody>
+                </Table>
+            </div>
 
             <!-- Pagination -->
-            <div class="flex items-center justify-between px-4 py-3 border-t border-border">
-                <p v-if="meta?.total" class="text-sm text-muted-foreground">
-                    Mostrando
-                    <span class="font-medium text-foreground">{{ from }}</span>
-                    -
-                    <span class="font-medium text-foreground">{{ to }}</span>
-                    de
-                    <span class="font-medium text-foreground">{{ meta.total }}</span>
-                    registros
-                </p>
-                <p v-else class="text-sm text-muted-foreground">
-                    No hay registros para mostrar
-                </p>
+            <Pagination :current-page="currentPage" :total-pages="totalPages" :total-items="meta?.total ?? 0"
+                :per-page="filters.paginationParams?.limit ?? 10" @update:page="goToPage" @update:per-page="(val) => {
+                    filters.paginationParams!.limit = val
+                    filters.paginationParams!.page = 1
+                    fetchList()
+                }" />
 
-                <div class="flex items-center gap-1">
-                    <Button variant="outline" size="icon" class="h-7 w-7" :disabled="currentPage === 1"
-                        @click="goToPage(1)">
-                        <ChevronsLeft class="h-3.5 w-3.5" />
-                    </Button>
-                    <Button variant="outline" size="icon" class="h-7 w-7" :disabled="currentPage === 1"
-                        @click="goToPage(currentPage - 1)">
-                        <ChevronLeft class="h-3.5 w-3.5" />
-                    </Button>
+            <!-- Modal -->
+            <Dialog v-model:open="isModalOpen">
+                <DialogContent class="sm:max-w-[760px] w-[95vw] p-0 overflow-hidden gap-0">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-border/50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-md bg-muted flex items-center justify-center">
+                                <FileText class="w-5 h-5" />
+                            </div>
+                            <div>
+                                <DialogTitle class="text-base font-medium leading-none text-foreground">Detalle del
+                                    comprobante
+                                </DialogTitle>
+                                <DialogDescription class="sr-only">
+                                    Muestra los detalles completos, imagen y descripción del comprobante de pago
+                                    seleccionado.
+                                </DialogDescription>
+                                <p class="text-xs text-muted-foreground mt-0.5">{{ selectedItem?.reference }}</p>
+                            </div>
+                        </div>
+                    </div>
 
-                    <template v-for="page in visiblePages" :key="page">
-                        <span v-if="page === '...'" class="px-1 text-xs text-muted-foreground">...</span>
-                        <Button v-else :variant="page === currentPage ? 'default' : 'outline'" size="icon"
-                            class="h-7 w-7 text-xs" @click="goToPage(page as number)">
-                            {{ page }}
-                        </Button>
-                    </template>
+                    <!-- Body -->
+                    <div v-if="selectedItem"
+                        class="grid grid-cols-1 md:grid-cols-[300px_1fr] overflow-y-auto max-h-[80vh]">
+                        <!-- Left: image panel -->
+                        <div class="bg-muted/50 border-r border-border/50 flex flex-col p-5">
+                            <div class="flex-1 flex items-center justify-center">
+                                <div
+                                    class="w-full h-full rounded-xl border border-dashed border-border flex flex-col items-center justify-center gap-2 bg-background">
 
-                    <Button variant="outline" size="icon" class="h-7 w-7" :disabled="currentPage === totalPages"
-                        @click="goToPage(currentPage + 1)">
-                        <ChevronRight class="h-3.5 w-3.5" />
-                    </Button>
-                    <Button variant="outline" size="icon" class="h-7 w-7" :disabled="currentPage === totalPages"
-                        @click="goToPage(totalPages)">
-                        <ChevronsRight class="h-3.5 w-3.5" />
-                    </Button>
-                </div>
-            </div>
+                                    <div v-if="isLoadingImage" class="flex flex-col items-center gap-2">
+                                        <Loader2 class="h-7 w-7 animate-spin text-primary" />
+                                        <p class="text-xs text-muted-foreground">Obteniendo comprobante...</p>
+                                    </div>
+
+                                    <img v-else-if="currentImage" :src="currentImage"
+                                        class="w-full h-full object-contain rounded-xl" />
+
+                                    <template v-else>
+                                        <ImageOff class="w-9 h-9 text-muted-foreground/30" />
+                                        <p class="text-xs text-muted-foreground">Sin imagen disponible</p>
+                                    </template>
+
+                                </div>
+                            </div>
+
+                            <div class="mt-5">
+                                <Button variant="outline" class="w-full gap-2 cursor-pointer">
+                                    <Download class="w-3.5 h-3.5" />
+                                    Descargar comprobante
+                                </Button>
+                            </div>
+                        </div>
+
+                        <!-- Right: details panel -->
+                        <div class="flex flex-col p-5 gap-0">
+                            <div class="bg-muted/50 rounded-xl p-5 flex items-center justify-between mb-6">
+                                <div>
+                                    <p
+                                        class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-1">
+                                        Monto total</p>
+                                    <p class="text-3xl font-medium tracking-tight text-foreground">
+                                        {{ formatAmount(selectedItem.amount, selectedItem.currency) }}
+                                    </p>
+                                </div>
+                                <div class="text-right">
+                                    <Badge
+                                        :class="['px-3 py-0.5 rounded-full text-[11px] font-medium uppercase tracking-wide', EVIDENCE_STATUS[selectedItem?.status]?.class]">
+                                        {{ EVIDENCE_STATUS[selectedItem.status]?.label }}
+                                    </Badge>
+                                </div>
+                            </div>
+
+                            <!-- Fields grid -->
+                            <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+                                <div>
+                                    <p
+                                        class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-1">
+                                        Referencia</p>
+                                    <p class="text-sm text-foreground">{{ selectedItem.reference }}</p>
+                                </div>
+                                <div>
+                                    <p
+                                        class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-1">
+                                        Método
+                                    </p>
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full shrink-0"
+                                            :style="{ background: BANKS[selectedItem.bank]?.color ?? '#888' }" />
+                                        <p class="text-sm text-foreground">
+                                            {{ BANKS[selectedItem.bank]?.name ?? selectedItem.bank }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p
+                                        class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-1">
+                                        Fecha de pago</p>
+                                    <p class="text-sm text-foreground">{{ formatDate(selectedItem.paymentDate) }}</p>
+                                </div>
+                                <div>
+                                    <p
+                                        class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-1">
+                                        Fecha de registro</p>
+                                    <p class="text-sm text-foreground">{{ formatDate(selectedItem.createdAt) }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mt-5 pt-4 border-t border-border/50">
+                                <p
+                                    class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-1.5">
+                                    Descripción</p>
+                                <p
+                                    :class="['text-sm leading-relaxed', selectedItem.description ? 'text-foreground' : 'text-muted-foreground italic text-xs']">
+                                    {{ selectedItem.description || 'Sin descripción' }}
+                                </p>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="mt-auto pt-6 flex justify-end">
+                                <DialogClose as-child>
+                                    <Button variant="secondary" class="w-auto cursor-pointer">
+                                        Cerrar
+                                    </Button>
+                                </DialogClose>
+                            </div>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </template>
     </div>
 </template>

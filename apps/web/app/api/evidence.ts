@@ -24,6 +24,13 @@ export function useEvidenceApi() {
                     search: paginationParams?.search ?? ''
                 }
             })
+        },
+
+        getImage(imageKey: string) {
+            return $api<Blob>(`/evidences/images/${imageKey}`, {
+                method: 'GET',
+                responseType: 'blob',
+            })
         }
     }
 }

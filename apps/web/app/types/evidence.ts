@@ -1,6 +1,5 @@
 import type { PaginationParams } from "./pagination"
-
-export type EvidenceStatus = 'PENDING' | 'VERIFIED' | 'REJECTED'
+import { type EvidenceStatus } from "../constants/evidence_status"
 
 export type Evidence = {
     id: string
@@ -13,7 +12,7 @@ export type Evidence = {
     reference: string
     recipient: string
     isLegible: boolean
-    imageUrl: string
+    imageKey: string
     ocrRaw: string
     status: EvidenceStatus
     description: string | null
@@ -26,7 +25,9 @@ export type EvidenceFilters = {
     status?: EvidenceStatus
     bank?: string
     currency?: string
-    dateFrom?: string
-    dateTo?: string
+    paymentDateFrom?: string
+    paymentDateTo?: string
+    createdDateFrom?: string
+    createdDateTo?: string
     paginationParams?: PaginationParams
 }

@@ -8,8 +8,10 @@ const props = defineProps<{
 </script>
 
 <template>
-  <tr data-slot="table-row"
-    :class="cn('hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors', props.class)">
+  <div
+    data-slot="dialog-header"
+    :class="cn('flex flex-col gap-2 text-center sm:text-left', props.class)"
+  >
     <slot />
-  </tr>
+  </div>
 </template>
