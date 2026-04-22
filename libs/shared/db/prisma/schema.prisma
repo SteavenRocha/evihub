@@ -51,23 +51,23 @@ model User {
 // EVIDENCIAS DE PAGO
 // ==================
 model PaymentEvidence {
-  id          String         @id @default(uuid())
-  accountId   String         @map("account_id")
-  uploadedBy  String         @map("uploaded_by")
-  amount      Decimal        @db.Decimal(10, 2)
-  currency    String         @default("PEN")
-  paymentDate DateTime       @map("payment_date")
-  bank        String?
-  reference   String?
-  recipient   String?
-  isLegible   Boolean        @default(true) @map("is_legible")
-  imageKey    String?        @map("image_key")
-  ocrRaw      Json?          @map("ocr_raw")
-  status      EvidenceStatus @default(PENDING)
-  description String?
-  createdAt   DateTime       @default(now()) @map("created_at")
-  updatedAt   DateTime       @updatedAt @map("updated_at")
-  deletedAt   DateTime?      @map("deleted_at")
+  id                String         @id @default(uuid())
+  accountId         String         @map("account_id")
+  uploadedBy        String         @map("uploaded_by")
+  amount            Decimal        @db.Decimal(10, 2)
+  currency          String         @default("PEN")
+  paymentDate       DateTime       @map("payment_date")
+  paymentMethod     PaymentMethod  @map("payment_method")
+  transactionNumber String         @map("transaction_number")
+  recipient         String?
+  isLegible         Boolean        @default(true) @map("is_legible")
+  imageKey          String?        @map("image_key")
+  ocrRaw            Json?          @map("ocr_raw")
+  status            EvidenceStatus @default(AUTO_VERIFIED)
+  description       String?
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  deletedAt         DateTime?      @map("deleted_at")
 
   account Account @relation(fields: [accountId], references: [id])
   user    User    @relation(fields: [uploadedBy], references: [id])
@@ -83,8 +83,14 @@ enum Role {
   VIEWER
 }
 
+enum PaymentMethod {
+  BCP
+  YAPE
+  PLIN
+}
+
 enum EvidenceStatus {
-  PENDING
-  VERIFIED
+  AUTO_VERIFIED
+  MANUAL_REVIEW
   REJECTED
 }

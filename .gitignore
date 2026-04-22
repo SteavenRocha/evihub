@@ -55,3 +55,4 @@ libs/shared/db/generated
 
 # Uploads
 apps/api/uploads/
+uploads

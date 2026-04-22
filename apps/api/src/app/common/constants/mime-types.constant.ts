@@ -7,6 +7,8 @@ export const VALID_MIME_TYPES = [
     'image/heif',
 ] as const
 
+export type ValidMimeType = typeof VALID_MIME_TYPES[number]
+
 export const MIME_TYPE_TO_EXT: Record<string, string> = {
     'image/jpeg': 'jpg',
     'image/jpg': 'jpg',

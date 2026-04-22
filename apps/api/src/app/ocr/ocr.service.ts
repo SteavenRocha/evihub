@@ -2,9 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException, Logger }
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import { OcrResult } from './interfaces/ocr-result.interface';
-
-const SUPPORTED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'] as const;
-type SupportedMimeType = typeof SUPPORTED_MIME_TYPES[number];
+import { VALID_MIME_TYPES, type ValidMimeType } from '../common/constants/mime-types.constant'
 
 @Injectable()
 export class OcrService {
@@ -27,13 +25,19 @@ export class OcrService {
                         currency: { type: SchemaType.STRING },
                         paymentDate: { type: SchemaType.STRING },
                         paymentTime: { type: SchemaType.STRING },
-                        bank: { type: SchemaType.STRING },
-                        reference: { type: SchemaType.STRING },
+                        paymentMethod: { type: SchemaType.STRING },
+                        transactionNumber: { type: SchemaType.STRING },
                         recipient: { type: SchemaType.STRING },
-                        ocrRaw: { type: SchemaType.STRING },
                         isLegible: { type: SchemaType.BOOLEAN },
+                        ocrRaw: {
+                            type: SchemaType.OBJECT,
+                            properties: {
+                                rawText: { type: SchemaType.STRING },
+                                detectedLanguage: { type: SchemaType.STRING },
+                            }
+                        },
                     },
-                    required: ['amount', 'currency', 'paymentDate', 'paymentTime', 'bank', 'reference', 'recipient', 'ocrRaw', 'isLegible'],
+                    required: ['amount', 'currency', 'paymentDate', 'paymentTime', 'paymentMethod', 'transactionNumber', 'recipient', 'ocrRaw', 'isLegible'],
                 },
             },
         });
@@ -41,10 +45,10 @@ export class OcrService {
 
     async extractFromImage(
         imageBuffer: Buffer,
-        mimeType: SupportedMimeType = 'image/jpeg',
+        mimeType: ValidMimeType
     ): Promise<OcrResult> {
 
-        if (!SUPPORTED_MIME_TYPES.includes(mimeType)) {
+        if (!VALID_MIME_TYPES.includes(mimeType)) {
             throw new BadRequestException(`Image type not supported: ${mimeType}`);
         }
 
@@ -57,20 +61,22 @@ export class OcrService {
                             - currency: Siempre "PEN", a menos que el comprobante indique "USD" o "$" explícitamente.
                             - paymentDate: Fecha de la operación en formato DD-MM-YYYY (ej: 15-04-2026). No uses la fecha actual.
                             - paymentTime: Hora exacta de la operación tal cual aparece en la imagen (ej: "01:59 p. m.", "14:30:05", "11:20 am").
-                            - bank: Nombre de la app emisora (ej: Yape, Plin, BCP).
-                            - reference: Número de operación o ID de transacción completo.
+                            - paymentMethod: Nombre de la app emisora (ej: Yape, Plin, BCP).
+                            - transactionNumber: Número de operación o ID de transacción completo.
                             - recipient: Nombre completo de la persona o empresa que recibe el dinero (el titular del destino).
-                            - ocrRaw: Texto concatenado de los puntos clave detectados, separados por " | ". 
-                                      Ejemplo: "amount: 50 | reference: 2853227 | bank: Yape | currency: PEN | paymentDate: 08-03-2026 | paymentTime: 01:59 p. m. | recipient: Juan Pérez".
+                            - ocrRaw: Un objeto con metadatos de la extracción:
+                                - rawText: Todo el texto detectado en la imagen sin procesar.
+                                - detectedLanguage: Idioma detectado (ej: "es").
                             - isLegible: false si la imagen es borrosa, recortada o falta algún campo requerido.
                             
                             Instrucciones críticas:
                             1. Si un dato no es 100% legible debido a borrosidad o luz, escribe "null" en lugar de adivinar.
                             2. Sé conservador: ante la duda, marca isLegible como false.
-                            3. El (recipient) es el beneficiario. En Yape suele salir después de "¡Yapeaste a...!" o debajo del monto.
-                            4. Elimina frases publicitarias o botones como "¡Yapeaste!", "Compartir" o "Ir a inicio".
-                            5. El monto (amount) debe ser solo el número.
-                            6. La (reference) es el número de operación. Es CRÍTICO para evitar fraudes.
+                            3. El monto (amount) debe ser solo el número.
+                            4. El (recipient) es el beneficiario. En Yape suele salir después de "¡Yapeaste a...!" o debajo del monto.
+                            5. Para los datos principales NO incluyas frases publicitarias o botones como "¡Yapeaste!", "Compartir" o "Ir a inicio".
+                            6. El (transactionNumber) es el número de operación. Es CRÍTICO para evitar fraudes.
+                            7. En ocrRaw.rawText incluye TODO el texto que logres leer, incluso el que no uses en los campos principales.
                         `;
 
             const result = await this.model.generateContent([

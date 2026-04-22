@@ -1,5 +1,6 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
+import { PaymentMethod, EvidenceStatus } from '@evihub/db';
 
 export class CreateEvidenceDto {
     @IsNumber()
@@ -19,30 +20,30 @@ export class CreateEvidenceDto {
     @IsNotEmpty()
     paymentTime!: string;
 
-    @IsString()
+    @IsEnum(PaymentMethod)
     @IsNotEmpty()
-    bank!: string;
+    paymentMethod!: PaymentMethod;
 
     @IsString()
     @IsNotEmpty()
-    reference!: string;
-
-    @IsString()
-    @IsNotEmpty()
-    recipient!: string;
-
-    @IsString()
-    @IsNotEmpty()
-    imageKey!: string;
+    transactionNumber!: string;
 
     @IsString()
     @IsOptional()
-    ocrRaw?: string;
+    recipient?: string;
 
     @IsBoolean()
     @IsNotEmpty()
     @Type(() => Boolean)
     isLegible!: boolean;
+
+    @IsObject()
+    @IsOptional()
+    ocrRaw?: Record<string, any>;
+
+    @IsEnum(EvidenceStatus)
+    @IsOptional()
+    status?: EvidenceStatus;
 
     @IsString()
     @IsOptional()

@@ -3,10 +3,10 @@ import { PaymentEvidence, Prisma, PrismaService, type User } from '@evihub/db';
 import { OcrService } from '../ocr/ocr.service';
 import { CreateEvidenceDto } from './dto/create-evidence.dto';
 import { OcrResult } from '../ocr/interfaces/ocr-result.interface';
-import { readFileSync } from 'fs';
 import { paginate } from '../common/helpers/paginator';
 import { PaginatedResult } from '../common/interfaces/paginated.interface';
 import { FilterEvidenceDto } from './dto/filter-evidence.dto';
+import { type ValidMimeType } from '../common/constants/mime-types.constant';
 
 @Injectable()
 export class EvidencesService {
@@ -16,20 +16,18 @@ export class EvidencesService {
   ) { }
 
   async scan(file: Express.Multer.File): Promise<OcrResult> {
-    const imageBuffer = readFileSync(file.path);
-    const ocrResult = await this.ocrService.extractFromImage(imageBuffer);
-    const imageKey = `/uploads/${file.filename}`;
-
-    return {
-      ...ocrResult,
-      imageKey
-    };
+    const ocrResult = await this.ocrService.extractFromImage(
+      file.buffer,
+      file.mimetype as ValidMimeType
+    );
+    return ocrResult;
   }
 
-  async create(dto: CreateEvidenceDto, user: User): Promise<PaymentEvidence> {
+  async create(dto: CreateEvidenceDto, file: Express.Multer.File, user: User): Promise<PaymentEvidence> {
     const { paymentDate, paymentTime, ...rest } = dto;
 
     const fullDateTime = this.parseDate(paymentDate, paymentTime);
+    const imageKey = file.filename
 
     return this.prismaService.paymentEvidence.create({
       data: {
@@ -37,6 +35,7 @@ export class EvidencesService {
         paymentDate: fullDateTime,
         accountId: user.accountId,
         uploadedBy: user.id,
+        imageKey,
       },
     });
   }

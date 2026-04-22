@@ -6,7 +6,9 @@ export interface OcrResult {
     bank: string | null;
     reference: string | null;
     recipient: string | null;
-    imageKey: string | null;
-    ocrRaw: string | null;
+    ocrRaw: {
+        rawText: string | null;
+        detectedLanguage: string | null;
+    } | null;
     isLegible: boolean | null;
 }
