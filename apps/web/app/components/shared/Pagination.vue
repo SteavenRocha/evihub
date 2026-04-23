@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import {
+    Select, SelectContent, SelectItem,
+    SelectTrigger, SelectValue,
+} from '@/components/ui/select'
 
 const props = defineProps<{
     currentPage: number
@@ -66,13 +70,16 @@ const visiblePages = computed(() => {
                 <span v-else>Sin registros</span>
             </p>
 
-            <select :value="perPage"
-                class="h-7 rounded-md border border-border/60 bg-background px-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer"
-                @change="emit('update:perPage', Number(($event.target as HTMLSelectElement).value))">
-                <option v-for="opt in PER_PAGE_OPTIONS" :key="opt" :value="opt">
-                    {{ opt }} / pág
-                </option>
-            </select>
+            <Select :default-value="String(perPage)" @update:modelValue="emit('update:perPage', Number($event))">
+                <SelectTrigger class="h-7 w-28 text-xs transition-colors hover:bg-accent">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem v-for="opt in PER_PAGE_OPTIONS" :key="opt" :value="String(opt)">
+                        {{ opt }} / pág
+                    </SelectItem>
+                </SelectContent>
+            </Select>
         </div>
 
         <!-- Right: page controls -->

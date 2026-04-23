@@ -18,12 +18,12 @@ import Pagination from '@/components/shared/Pagination.vue'
 import {
     Dialog, DialogContent, DialogTitle, DialogDescription
 } from '@/components/ui/dialog'
-import { BANKS } from '~/constants/banks'
-import { EVIDENCE_STATUS } from '~/constants/evidence_status'
+import { PAYMENT_METHODS } from '~/constants/payment-methods'
+import { EVIDENCE_STATUS } from '~/constants/evidence-status'
+import { CURRENCY } from '~/constants/currency'
 import type { Evidence } from '~/types/evidence'
 
 definePageMeta({ layout: 'default' })
-
 useHead({ title: 'Comprobantes | Evihub' })
 
 const {
@@ -62,7 +62,7 @@ onMounted(fetchList)
 const dateRange = ref<DateRangeValue | null>(null)
 
 watch(
-    () => [filters.value.bank, filters.value.currency, filters.value.status],
+    () => [filters.value.paymentMethod, filters.value.currency, filters.value.status],
     () => applyFilters()
 )
 
@@ -115,7 +115,7 @@ const openDetail = async (item: Evidence) => {
         <Button as-child size="lg">
             <NuxtLink to="/evidences/scan">
                 <Plus class="h-4 w-4" />
-                Registrar nuevo pago
+                Registrar comprobante
             </NuxtLink>
         </Button>
     </div>
@@ -127,8 +127,8 @@ const openDetail = async (item: Evidence) => {
             Filtros:
         </div>
 
-        <!-- bank -->
-        <Select v-model="filters.bank">
+        <!-- paymentMethod -->
+        <Select v-model="filters.paymentMethod">
             <SelectTrigger class="transition-colors hover:bg-accent group">
                 <Landmark class="h-4 w-4 text-muted-foreground group-hover:text-accent-foreground" />
 
@@ -145,7 +145,7 @@ const openDetail = async (item: Evidence) => {
                     </div>
                 </SelectItem>
 
-                <SelectItem v-for="(b, id) in BANKS" :key="id" :value="id">
+                <SelectItem v-for="(b, id) in PAYMENT_METHODS" :key="id" :value="id">
                     <div class="flex items-center gap-2">
                         <span class="w-2 h-2 rounded-full shrink-0" :style="{ background: b?.color ?? '#888' }" />
                         <span>{{ b?.name }}</span>
@@ -164,9 +164,17 @@ const openDetail = async (item: Evidence) => {
                 </div>
             </SelectTrigger>
             <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="PEN">PEN (S/)</SelectItem>
-                <SelectItem value="USD">USD ($)</SelectItem>
+                <SelectItem value="all">
+                    <div class="flex items-center gap-2">
+                        <span>Todos las monedas</span>
+                    </div>
+                </SelectItem>
+
+                <SelectItem v-for="(b, id) in CURRENCY" :key="id" :value="id">
+                    <div class="flex items-center gap-2">
+                        <span>{{ b?.code }} — {{ b?.name }}</span>
+                    </div>
+                </SelectItem>
             </SelectContent>
         </Select>
 
@@ -217,7 +225,7 @@ const openDetail = async (item: Evidence) => {
                 <Table>
                     <TableHeader class="sticky top-0 z-10 bg-muted">
                         <TableRow>
-                            <TableHead class="w-48">Comprobante</TableHead>
+                            <TableHead class="w-48">N° de operación</TableHead>
                             <TableHead>Monto</TableHead>
                             <TableHead>Método de pago</TableHead>
                             <TableHead>Fecha de pago</TableHead>
@@ -242,9 +250,9 @@ const openDetail = async (item: Evidence) => {
                             </div> -->
 
                                 <div class="flex flex-col">
-                                    <p class="font-medium text-sm">{{ item.reference }}</p>
+                                    <p class="font-medium text-sm">{{ item.transactionNumber }}</p>
                                     <span class="text-[10px] text-muted-foreground uppercase">
-                                        {{ BANKS[item.bank]?.name ?? 'General' }}
+                                        {{ PAYMENT_METHODS[item.paymentMethod]?.name ?? 'General' }}
                                     </span>
                                 </div>
                             </TableCell>
@@ -254,12 +262,12 @@ const openDetail = async (item: Evidence) => {
                                 {{ formatAmount(item.amount, item.currency) }}
                             </TableCell>
 
-                            <!-- Bank -->
+                            <!-- Payment method -->
                             <TableCell>
                                 <div class="flex items-center gap-1.5 capitalize">
                                     <span class="w-2 h-2 rounded-full shrink-0"
-                                        :style="{ background: BANKS[item.bank]?.color ?? '#888' }" />
-                                    {{ BANKS[item.bank]?.name ?? item.bank }}
+                                        :style="{ background: PAYMENT_METHODS[item.paymentMethod]?.color ?? '#888' }" />
+                                    {{ PAYMENT_METHODS[item.paymentMethod]?.name ?? item.paymentMethod }}
                                 </div>
                             </TableCell>
 
@@ -318,7 +326,8 @@ const openDetail = async (item: Evidence) => {
                                     Muestra los detalles completos, imagen y descripción del comprobante de pago
                                     seleccionado.
                                 </DialogDescription>
-                                <p class="text-xs text-muted-foreground mt-0.5">{{ selectedItem?.reference }}</p>
+                                <p class="text-xs text-muted-foreground mt-0.5">{{ selectedItem?.transactionNumber }}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -360,8 +369,7 @@ const openDetail = async (item: Evidence) => {
                         <div class="flex flex-col p-5 gap-0">
                             <div class="bg-muted/50 rounded-xl p-5 flex items-center justify-between mb-6">
                                 <div>
-                                    <p
-                                        class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-1">
+                                    <p class="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">
                                         Monto total</p>
                                     <p class="text-3xl font-medium tracking-tight text-foreground">
                                         {{ formatAmount(selectedItem.amount, selectedItem.currency) }}
@@ -378,33 +386,30 @@ const openDetail = async (item: Evidence) => {
                             <!-- Fields grid -->
                             <div class="grid grid-cols-2 gap-x-6 gap-y-4">
                                 <div>
-                                    <p
-                                        class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-1">
-                                        Referencia</p>
-                                    <p class="text-sm text-foreground">{{ selectedItem.reference }}</p>
+                                    <p class="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">
+                                        N° de operación</p>
+                                    <p class="text-sm text-foreground">{{ selectedItem.transactionNumber }}</p>
                                 </div>
                                 <div>
-                                    <p
-                                        class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-1">
+                                    <p class="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">
                                         Método
                                     </p>
                                     <div class="flex items-center gap-2">
                                         <span class="w-2 h-2 rounded-full shrink-0"
-                                            :style="{ background: BANKS[selectedItem.bank]?.color ?? '#888' }" />
+                                            :style="{ background: PAYMENT_METHODS[selectedItem.paymentMethod]?.color ?? '#888' }" />
                                         <p class="text-sm text-foreground">
-                                            {{ BANKS[selectedItem.bank]?.name ?? selectedItem.bank }}
+                                            {{ PAYMENT_METHODS[selectedItem.paymentMethod]?.name ??
+                                                selectedItem.paymentMethod }}
                                         </p>
                                     </div>
                                 </div>
                                 <div>
-                                    <p
-                                        class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-1">
+                                    <p class="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">
                                         Fecha de pago</p>
                                     <p class="text-sm text-foreground">{{ formatDate(selectedItem.paymentDate) }}</p>
                                 </div>
                                 <div>
-                                    <p
-                                        class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-1">
+                                    <p class="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1">
                                         Fecha de registro</p>
                                     <p class="text-sm text-foreground">{{ formatDate(selectedItem.createdAt) }}</p>
                                 </div>
@@ -412,8 +417,7 @@ const openDetail = async (item: Evidence) => {
 
                             <!-- Description -->
                             <div class="mt-5 pt-4 border-t border-border/50">
-                                <p
-                                    class="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-1.5">
+                                <p class="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-1.5">
                                     Descripción</p>
                                 <p
                                     :class="['text-sm leading-relaxed', selectedItem.description ? 'text-foreground' : 'text-muted-foreground italic text-xs']">

@@ -14,7 +14,7 @@ export function useEvidence() {
 
     const filters = ref<EvidenceFilters>({
         status: undefined,
-        bank: undefined,
+        paymentMethod: undefined,
         currency: undefined,
         paymentDateFrom: undefined,
         paymentDateTo: undefined,
@@ -73,7 +73,7 @@ export function useEvidence() {
 
     function clearFilters(onClear?: () => void) {
         filters.value = {
-            status: undefined, bank: '', currency: '',
+            status: undefined, paymentMethod: undefined, currency: undefined,
             paymentDateFrom: undefined, paymentDateTo: undefined,
             createdDateFrom: undefined, createdDateTo: undefined,
             paginationParams: { page: 1, limit: 10, search: '' }

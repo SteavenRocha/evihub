@@ -1,14 +1,16 @@
-export const BANKS: Record<string, { name: string, color: string } | undefined> = {
+export const PAYMENT_METHODS = {
     BCP: {
         name: 'BCP',
         color: '#1a67b5'
     },
-    Yape: {
+    YAPE: {
         name: 'Yape',
         color: '#6c2d8c'
     },
-    Plin: {
+    PLIN: {
         name: 'Plin',
         color: '#00bcd4'
     },
 }
+
+export type PaymentMethod = keyof typeof PAYMENT_METHODS;
