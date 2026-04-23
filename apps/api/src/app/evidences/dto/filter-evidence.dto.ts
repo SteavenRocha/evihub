@@ -1,6 +1,6 @@
-import { IsDateString, IsEnum, IsOptional, IsString } from "class-validator";
+import { IsDateString, IsEnum, IsOptional } from "class-validator";
 import { BuildQueryDto } from "../../common/dto/build-query.dto";
-import { EvidenceStatus } from "@evihub/db";
+import { Currency, EvidenceStatus, PaymentMethod } from "@evihub/db";
 
 export class FilterEvidenceDto extends BuildQueryDto {
     @IsOptional()
@@ -8,12 +8,12 @@ export class FilterEvidenceDto extends BuildQueryDto {
     status?: EvidenceStatus
 
     @IsOptional()
-    @IsString()
-    bank?: string
+    @IsEnum(PaymentMethod)
+    paymentMethod?: PaymentMethod
 
     @IsOptional()
-    @IsString()
-    currency?: string
+    @IsEnum(Currency)
+    currency?: Currency
 
     @IsOptional()
     @IsDateString()

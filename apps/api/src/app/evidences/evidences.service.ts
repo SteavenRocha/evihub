@@ -42,7 +42,7 @@ export class EvidencesService {
 
   async findAll(user: User, filterEvidenceDto: FilterEvidenceDto): Promise<PaginatedResult<PaymentEvidence>> {
     const {
-      status, bank, currency,
+      status, paymentMethod, currency,
       paymentDateFrom, paymentDateTo,
       createdDateFrom, createdDateTo
     } = filterEvidenceDto;
@@ -52,7 +52,7 @@ export class EvidencesService {
       deletedAt: null,
       ...(status && { status }),
       ...(currency && { currency }),
-      ...(bank && { bank: { equals: bank, mode: 'insensitive' } }),
+      ...(paymentMethod && { paymentMethod }),
       ...((paymentDateFrom || paymentDateTo) && {
         paymentDate: {
           ...(paymentDateFrom && { gte: new Date(paymentDateFrom) }),

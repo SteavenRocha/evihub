@@ -55,7 +55,7 @@ model PaymentEvidence {
   accountId         String         @map("account_id")
   uploadedBy        String         @map("uploaded_by")
   amount            Decimal        @db.Decimal(10, 2)
-  currency          String         @default("PEN")
+  currency          Currency
   paymentDate       DateTime       @map("payment_date")
   paymentMethod     PaymentMethod  @map("payment_method")
   transactionNumber String         @map("transaction_number")
@@ -87,6 +87,11 @@ enum PaymentMethod {
   BCP
   YAPE
   PLIN
+}
+
+enum Currency {
+  PEN
+  USD
 }
 
 enum EvidenceStatus {

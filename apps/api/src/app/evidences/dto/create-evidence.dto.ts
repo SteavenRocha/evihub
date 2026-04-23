@@ -1,6 +1,6 @@
 import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PaymentMethod, EvidenceStatus } from '@evihub/db';
+import { PaymentMethod, EvidenceStatus, Currency } from '@evihub/db';
 
 export class CreateEvidenceDto {
     @IsNumber()
@@ -8,9 +8,9 @@ export class CreateEvidenceDto {
     @Type(() => Number)
     amount!: number;
 
-    @IsString()
+    @IsEnum(Currency)
     @IsNotEmpty()
-    currency!: string;
+    currency!: Currency;
 
     @IsString()
     @IsNotEmpty()
