@@ -28,7 +28,7 @@ export class EvidencesController {
   }
 
   @Post()
-  @UploadImage({ storage: 'disk' })
+  @UploadImage({ storage: 'memory' })
   create(
     @UploadedFile(new ParseFilePipe({
       fileIsRequired: true,

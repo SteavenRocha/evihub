@@ -29,13 +29,7 @@ export class OcrService {
                         transactionNumber: { type: SchemaType.STRING },
                         recipient: { type: SchemaType.STRING },
                         isLegible: { type: SchemaType.BOOLEAN },
-                        ocrRaw: {
-                            type: SchemaType.OBJECT,
-                            properties: {
-                                rawText: { type: SchemaType.STRING },
-                                detectedLanguage: { type: SchemaType.STRING },
-                            }
-                        },
+                        ocrRaw: { type: SchemaType.STRING },
                     },
                     required: ['amount', 'currency', 'paymentDate', 'paymentTime', 'paymentMethod', 'transactionNumber', 'recipient', 'ocrRaw', 'isLegible'],
                 },
@@ -64,9 +58,7 @@ export class OcrService {
                             - paymentMethod: Nombre de la app emisora en mayúsculas (ej: YAPE, PLIN, BCP).
                             - transactionNumber: Número de operación o ID de transacción completo.
                             - recipient: Nombre completo de la persona o empresa que recibe el dinero (el titular del destino).
-                            - ocrRaw: Un objeto con metadatos de la extracción:
-                                - rawText: Todo el texto detectado en la imagen sin procesar.
-                                - detectedLanguage: Idioma detectado (ej: "es").
+                            - ocrRaw: Todo el texto detectado en la imagen.
                             - isLegible: false si la imagen es borrosa, recortada o falta algún campo requerido.
                             
                             Instrucciones críticas:
@@ -76,7 +68,7 @@ export class OcrService {
                             4. El (recipient) es el beneficiario. En Yape suele salir después de "¡Yapeaste a...!" o debajo del monto.
                             5. Para los datos principales NO incluyas frases publicitarias o botones como "¡Yapeaste!", "Compartir" o "Ir a inicio".
                             6. El (transactionNumber) es el número de operación. Es CRÍTICO para evitar fraudes.
-                            7. En ocrRaw.rawText incluye TODO el texto que logres leer, incluso el que no uses en los campos principales.
+                            7. En (ocrRaw) incluye TODO el texto que logres leer, incluso el que no uses en los campos principales.
                         `;
 
             const result = await this.model.generateContent([

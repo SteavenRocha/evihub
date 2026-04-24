@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PaymentEvidence, Prisma, PrismaService, type User } from '@evihub/db';
 import { OcrService } from '../ocr/ocr.service';
 import { CreateEvidenceDto } from './dto/create-evidence.dto';
@@ -7,6 +7,10 @@ import { paginate } from '../common/helpers/paginator';
 import { PaginatedResult } from '../common/interfaces/paginated.interface';
 import { FilterEvidenceDto } from './dto/filter-evidence.dto';
 import { type ValidMimeType } from '../common/constants/mime-types.constant';
+import { writeFile } from 'fs/promises';
+import { join } from 'path';
+import { UPLOADS_DIR } from '../common/constants/paths.constants';
+import { generateImageName } from '../common/utils/generate-image-name.util';
 
 @Injectable()
 export class EvidencesService {
@@ -25,19 +29,40 @@ export class EvidencesService {
 
   async create(dto: CreateEvidenceDto, file: Express.Multer.File, user: User): Promise<PaymentEvidence> {
     const { paymentDate, paymentTime, ...rest } = dto;
-
     const fullDateTime = this.parseDate(paymentDate, paymentTime);
-    const imageKey = file.filename
+    const imageKey = generateImageName(file.mimetype)
+    let evidence: PaymentEvidence
 
-    return this.prismaService.paymentEvidence.create({
-      data: {
-        ...rest,
-        paymentDate: fullDateTime,
-        accountId: user.accountId,
-        uploadedBy: user.id,
-        imageKey,
-      },
-    });
+    try {
+      evidence = await this.prismaService.paymentEvidence.create({
+        data: {
+          ...rest,
+          paymentDate: fullDateTime,
+          accountId: user.accountId,
+          uploadedBy: user.id,
+          imageKey,
+        },
+      })
+    } catch (error) {
+      console.error('Failed to create evidence in DB', error)
+      throw new InternalServerErrorException('Failed to save evidence')
+    }
+
+    try {
+      await writeFile(join(UPLOADS_DIR, imageKey), file.buffer)
+    } catch (error) {
+      console.error(`Failed to write image to disk: ${imageKey}`, error)
+
+      try {
+        await this.prismaService.paymentEvidence.delete({ where: { id: evidence.id } })
+      } catch {
+        console.error(`Failed to rollback DB record: ${evidence.id}`)
+      }
+
+      throw new InternalServerErrorException('Failed to save image')
+    }
+
+    return evidence
   }
 
   async findAll(user: User, filterEvidenceDto: FilterEvidenceDto): Promise<PaginatedResult<PaymentEvidence>> {

@@ -5,6 +5,9 @@ CREATE TYPE "Role" AS ENUM ('ADMIN', 'VIEWER');
 CREATE TYPE "PaymentMethod" AS ENUM ('BCP', 'YAPE', 'PLIN');
 
 -- CreateEnum
+CREATE TYPE "Currency" AS ENUM ('PEN', 'USD');
+
+-- CreateEnum
 CREATE TYPE "EvidenceStatus" AS ENUM ('AUTO_VERIFIED', 'MANUAL_REVIEW', 'REJECTED');
 
 -- CreateTable
@@ -43,14 +46,14 @@ CREATE TABLE "payment_evidences" (
     "account_id" TEXT NOT NULL,
     "uploaded_by" TEXT NOT NULL,
     "amount" DECIMAL(10,2) NOT NULL,
-    "currency" TEXT NOT NULL DEFAULT 'PEN',
+    "currency" "Currency" NOT NULL,
     "payment_date" TIMESTAMP(3) NOT NULL,
     "payment_method" "PaymentMethod" NOT NULL,
     "transaction_number" TEXT NOT NULL,
     "recipient" TEXT,
     "is_legible" BOOLEAN NOT NULL DEFAULT true,
     "image_key" TEXT,
-    "ocr_raw" JSONB,
+    "ocr_raw" TEXT,
     "status" "EvidenceStatus" NOT NULL DEFAULT 'AUTO_VERIFIED',
     "description" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

@@ -1,6 +1,5 @@
-import { v4 as uuid } from 'uuid'
-import { MIME_TYPE_TO_EXT } from '../../common/constants/mime-types.constant'
 import { BadRequestException } from '@nestjs/common'
+import { generateImageName } from '../../common/utils/generate-image-name.util'
 
 export const fileNamer = (
     req: Express.Request,
@@ -9,8 +8,5 @@ export const fileNamer = (
 ) => {
     if (!file) return callback(new BadRequestException('No file provided'), false)
 
-    const fileExtension = MIME_TYPE_TO_EXT[file.mimetype] ?? 'jpg'
-    const fileName = `${uuid()}.${fileExtension}`
-
-    callback(null, fileName)
+    callback(null, generateImageName(file.mimetype))
 }
