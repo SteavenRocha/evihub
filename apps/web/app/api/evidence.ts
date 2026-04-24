@@ -3,7 +3,7 @@ import type { OcrResult } from "../types/ocr"
 import type { PaginationResponse } from "../types/pagination"
 
 export function useEvidenceApi() {
-    const $api = useNuxtApp().$api as typeof $fetch
+    const $api = useNuxtApp().$api
 
     return {
         scan: (body: FormData) =>

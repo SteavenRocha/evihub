@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar'
 import AppSidebar from '@/components/sidebar/AppSidebar.vue'
+import 'vue-sonner/style.css'
+import { Toaster } from '@/components/ui/sonner'
 </script>
 
 <template>
@@ -25,5 +27,7 @@ import AppSidebar from '@/components/sidebar/AppSidebar.vue'
                 </div>
             </div>
         </SidebarInset>
+
+        <Toaster position="top-right" />
     </SidebarProvider>
 </template>

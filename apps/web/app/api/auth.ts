@@ -2,7 +2,7 @@ import type { Login, LoginResponse } from "../types/auth"
 import type { User } from "../types/user"
 
 export function useAuthApi() {
-    const $api = useNuxtApp().$api as typeof $fetch
+    const $api = useNuxtApp().$api
 
     return {
         login: (body: Login) =>

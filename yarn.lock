@@ -1991,6 +1991,7 @@ __metadata:
     tailwindcss: "npm:^4.2.2"
     tw-animate-css: "npm:^1.4.0"
     vee-validate: "npm:^4.15.1"
+    vue-sonner: "npm:^2.0.9"
     zod: "npm:^4.3.6"
   languageName: unknown
   linkType: soft
@@ -20058,6 +20059,24 @@ __metadata:
     pinia:
       optional: true
   checksum: 10c0/11309a44c3b5aaa6e4f960d8739ce94796e78afa2d9b517ccfe78fa982f029009a07aef30ffeafecaf383a1cbd870ae27f7d56f4b9a62bad61423d8e244eb94b
+  languageName: node
+  linkType: hard
+
+"vue-sonner@npm:^2.0.9":
+  version: 2.0.9
+  resolution: "vue-sonner@npm:2.0.9"
+  peerDependencies:
+    "@nuxt/kit": ^4.0.3
+    "@nuxt/schema": ^4.0.3
+    nuxt: ^4.0.3
+  peerDependenciesMeta:
+    "@nuxt/kit":
+      optional: true
+    "@nuxt/schema":
+      optional: true
+    nuxt:
+      optional: true
+  checksum: 10c0/0001fcfd9163dd69f74bbbdbd50f61d7ceb514bf16571562cd51b0824b89cee809de2f93e1bb13fcc06375a07bc3e8bc1f552cb98e8ba1a665c8aecda47e039c
   languageName: node
   linkType: hard
 

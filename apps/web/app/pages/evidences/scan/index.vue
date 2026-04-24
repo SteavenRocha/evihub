@@ -10,12 +10,13 @@ import {
     Select, SelectContent, SelectItem,
     SelectTrigger, SelectValue,
 } from '@/components/ui/select'
-import { useForm } from 'vee-validate'
-import { toTypedSchema } from '@vee-validate/zod'
-import { z } from 'zod'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useForm } from 'vee-validate'
+import { toTypedSchema } from '@vee-validate/zod'
+import { z } from 'zod'
+import { toast } from 'vue-sonner'
 import { PAYMENT_METHODS } from '~/constants/payment-methods'
 import { CURRENCY } from '~/constants/currency'
 import { useEvidenceApi } from '~/api/evidence'
@@ -195,6 +196,10 @@ const handleSave = handleSubmit(async (values) => {
 
         await create(formData)
         handleReset()
+
+        toast.success('Comprobante registrado', {
+            description: `N° ${values.transactionNumber} guardado correctamente.`,
+        })
     } catch (err: any) {
         handleReset()
         saveError.value = err?.data?.message ?? 'Error al guardar el comprobante'

@@ -6,7 +6,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
     const isPublicRoute = publicRoutes.includes(to.path)
 
     if (store.user) {
-        return isPublicRoute ? navigateTo('/dashboard') : undefined
+        if (isPublicRoute || to.path === '/') return navigateTo('/dashboard')
+        return undefined
     }
 
     try {
@@ -14,7 +15,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
         const user = await me()
         store.setUser(user)
 
-        if (isPublicRoute) return navigateTo('/dashboard')
+        if (isPublicRoute || to.path === '/') return navigateTo('/dashboard')
     } catch {
         if (!isPublicRoute) return navigateTo('/login')
     }
