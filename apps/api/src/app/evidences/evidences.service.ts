@@ -80,17 +80,21 @@ export class EvidencesService {
       ...(paymentMethod && { paymentMethod }),
       ...((paymentDateFrom || paymentDateTo) && {
         paymentDate: {
-          ...(paymentDateFrom && { gte: new Date(paymentDateFrom) }),
+          ...(paymentDateFrom && {
+            gte: new Date(new Date(paymentDateFrom).setUTCHours(0, 0, 0, 0))
+          }),
           ...(paymentDateTo && {
-            lte: new Date(new Date(paymentDateTo).setHours(23, 59, 59, 999))
+            lte: new Date(new Date(paymentDateTo).setUTCHours(23, 59, 59, 999))
           }),
         },
       }),
       ...((createdDateFrom || createdDateTo) && {
         createdAt: {
-          ...(createdDateFrom && { gte: new Date(createdDateFrom) }),
+          ...(createdDateFrom && {
+            gte: new Date(new Date(createdDateFrom).setUTCHours(0, 0, 0, 0))
+          }),
           ...(createdDateTo && {
-            lte: new Date(new Date(createdDateTo).setHours(23, 59, 59, 999))
+            lte: new Date(new Date(createdDateTo).setUTCHours(23, 59, 59, 999))
           }),
         },
       }),

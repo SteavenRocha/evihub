@@ -54,8 +54,8 @@ export class OcrService {
                             - amount: Monto numérico (ej: 15.00). Si hay "S/" o "Soles", solo extrae el número.
                             - currency: Siempre "PEN", a menos que el comprobante indique "USD" o "$" explícitamente.
                             - paymentDate: Fecha de la operación en formato DD-MM-YYYY (ej: 15-04-2026). No uses la fecha actual.
-                            - paymentTime: Hora exacta de la operación tal cual aparece en la imagen (ej: "01:59 p. m.", "14:30:05", "11:20 am").
-                            - paymentMethod: Nombre de la app emisora en mayúsculas (ej: YAPE, PLIN, BCP).
+                            - paymentTime: Hora exacta de la operación en formato 12h con período en español (ej: "01:59 p. m.", "02:12 p. m.").
+                            - paymentMethod: Nombre de la app emisora en mayúsculas (ej: YAPE, PLIN, BCP), si no puedes identificar la app emisora, pon "OTROS".
                             - transactionNumber: Número de operación o ID de transacción completo.
                             - recipient: Nombre completo de la persona o empresa que recibe el dinero (el titular del destino).
                             - ocrRaw: Todo el texto detectado en la imagen.
@@ -65,10 +65,11 @@ export class OcrService {
                             1. Si un dato no es 100% legible debido a borrosidad o luz, escribe "null" en lugar de adivinar.
                             2. Sé conservador: ante la duda, marca isLegible como false.
                             3. El monto (amount) debe ser solo el número.
-                            4. El (recipient) es el beneficiario. En Yape suele salir después de "¡Yapeaste a...!" o debajo del monto.
-                            5. Para los datos principales NO incluyas frases publicitarias o botones como "¡Yapeaste!", "Compartir" o "Ir a inicio".
-                            6. El (transactionNumber) es el número de operación. Es CRÍTICO para evitar fraudes.
-                            7. En (ocrRaw) incluye TODO el texto que logres leer, incluso el que no uses en los campos principales.
+                            4. En el (paymentTime), si la imagen muestra formato 24h (ej: 14:12), conviértelo a 12h con período antes de responder.
+                            5. El (recipient) es el beneficiario. En Yape suele salir después de "¡Yapeaste a...!" o debajo del monto.
+                            6. Para los datos principales NO incluyas frases publicitarias o botones como "¡Yapeaste!", "Compartir" o "Ir a inicio".
+                            7. El (transactionNumber) es el número de operación. Es CRÍTICO para evitar fraudes.
+                            8. En (ocrRaw) incluye TODO el texto que logres leer, incluso el que no uses en los campos principales.
                         `;
 
             const result = await this.model.generateContent([

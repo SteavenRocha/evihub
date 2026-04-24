@@ -87,6 +87,7 @@ enum PaymentMethod {
   BCP
   YAPE
   PLIN
+  OTROS
 }
 
 enum Currency {
