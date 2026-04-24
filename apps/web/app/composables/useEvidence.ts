@@ -34,8 +34,17 @@ export function useEvidence() {
     async function fetchList() {
         isLoading.value = true
         error.value = null
+
+        const params = JSON.parse(JSON.stringify(filters.value, (key, value) => {
+            if (key === "" && typeof value === 'object') return value
+
+            if (value === 'all') return undefined
+
+            return value
+        }));
+
         try {
-            const response = await getAll(filters.value)
+            const response = await getAll(params)
             items.value = response.data
             meta.value = response.meta
         } catch (err: any) {
@@ -73,10 +82,18 @@ export function useEvidence() {
 
     function clearFilters(onClear?: () => void) {
         filters.value = {
-            status: undefined, paymentMethod: undefined, currency: undefined,
-            paymentDateFrom: undefined, paymentDateTo: undefined,
-            createdDateFrom: undefined, createdDateTo: undefined,
-            paginationParams: { page: 1, limit: 10, search: '' }
+            status: undefined,
+            paymentMethod: undefined,
+            currency: undefined,
+            paymentDateFrom: undefined,
+            paymentDateTo: undefined,
+            createdDateFrom: undefined,
+            createdDateTo: undefined,
+            paginationParams: {
+                page: 1,
+                limit: 10,
+                search: ''
+            }
         }
         onClear?.()
         fetchList()

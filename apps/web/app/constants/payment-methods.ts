@@ -11,6 +11,10 @@ export const PAYMENT_METHODS = {
         name: 'Plin',
         color: '#00bcd4'
     },
-}
+    OTROS: {
+        name: 'Otros',
+        color: '#999'
+    }
+} as const;
 
 export type PaymentMethod = keyof typeof PAYMENT_METHODS;

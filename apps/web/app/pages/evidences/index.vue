@@ -60,6 +60,7 @@ onMounted(fetchList)
 
 /* Filters */
 const dateRange = ref<DateRangeValue | null>(null)
+const isFilterActive = (value: any) => !!value
 
 watch(
     () => [filters.value.paymentMethod, filters.value.currency, filters.value.status],
@@ -129,12 +130,14 @@ const openDetail = async (item: Evidence) => {
 
         <!-- paymentMethod -->
         <Select v-model="filters.paymentMethod">
-            <SelectTrigger class="transition-colors hover:bg-accent group">
-                <Landmark class="h-4 w-4 text-muted-foreground group-hover:text-accent-foreground" />
-
-                <div class="group-hover:text-accent-foreground">
-                    <SelectValue placeholder="Método" />
-                </div>
+            <SelectTrigger :class="[
+                'transition-colors group',
+                isFilterActive(filters.paymentMethod)
+                    ? 'border-primary/40 bg-primary/5 text-primary hover:bg-primary/10'
+                    : 'hover:bg-accent'
+            ]">
+                <Landmark class="h-4 w-4" />
+                <SelectValue placeholder="Método" />
             </SelectTrigger>
 
             <SelectContent>
@@ -156,12 +159,14 @@ const openDetail = async (item: Evidence) => {
 
         <!-- Currency -->
         <Select v-model="filters.currency">
-            <SelectTrigger class="transition-colors hover:bg-accent group">
-                <DollarSign class="h-4 w-4 text-muted-foreground group-hover:text-accent-foreground" />
-
-                <div class="group-hover:text-accent-foreground">
-                    <SelectValue placeholder="Moneda" />
-                </div>
+            <SelectTrigger :class="[
+                'transition-colors group',
+                isFilterActive(filters.currency)
+                    ? 'border-primary/40 bg-primary/5 text-primary hover:bg-primary/10'
+                    : 'hover:bg-accent'
+            ]">
+                <DollarSign class="h-4 w-4" />
+                <SelectValue placeholder="Moneda" />
             </SelectTrigger>
             <SelectContent>
                 <SelectItem value="all">
@@ -180,18 +185,27 @@ const openDetail = async (item: Evidence) => {
 
         <!-- Status -->
         <Select v-model="filters.status">
-            <SelectTrigger class="transition-colors hover:bg-accent group">
-                <Info class="h-4 w-4 text-muted-foreground group-hover:text-accent-foreground" />
-
-                <div class="group-hover:text-accent-foreground">
-                    <SelectValue placeholder="Estado" />
-                </div>
+            <SelectTrigger :class="[
+                'transition-colors group',
+                isFilterActive(filters.status)
+                    ? 'border-primary/40 bg-primary/5 text-primary hover:bg-primary/10'
+                    : 'hover:bg-accent'
+            ]">
+                <Info class="h-4 w-4" />
+                <SelectValue placeholder="Estado" />
             </SelectTrigger>
             <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                <SelectItem value="PENDING">Pendiente</SelectItem>
-                <SelectItem value="VERIFIED">Verificado</SelectItem>
-                <SelectItem value="REJECTED">Rechazado</SelectItem>
+                <SelectItem value="all">
+                    <div class="flex items-center gap-2">
+                        <span>Todos los estados</span>
+                    </div>
+                </SelectItem>
+
+                <SelectItem v-for="(b, id) in EVIDENCE_STATUS" :key="id" :value="id">
+                    <div class="flex items-center gap-2">
+                        <span>{{ b?.label }}</span>
+                    </div>
+                </SelectItem>
             </SelectContent>
         </Select>
 

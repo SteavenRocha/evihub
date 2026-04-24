@@ -10,6 +10,9 @@ import {
     FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+import { useForm } from 'vee-validate'
+import { toTypedSchema } from '@vee-validate/zod'
+import { z } from 'zod'
 
 const props = defineProps<{
     class?: HTMLAttributes["class"]
@@ -17,13 +20,27 @@ const props = defineProps<{
 
 const { login, loading, error } = useAuth()
 
-const form = reactive({
-    email: '',
-    password: ''
+const formSchema = toTypedSchema(z.object({
+    email: z.string({ error: 'El email es requerido' })
+        .min(1, 'El email es requerido')
+        .check(z.email({ error: 'Ingresa un email válido' })),
+    password: z.string({ error: 'La contraseña es requerida' })
+        .min(1, 'La contraseña es requerida'),
+}))
+
+const { handleSubmit, errors, defineField } = useForm({
+    validationSchema: formSchema,
 })
 
-watch([() => form.email, () => form.password], () => {
+const [email, emailAttrs] = defineField('email')
+const [password, passwordAttrs] = defineField('password')
+
+watch([email, password], () => {
     if (error.value) error.value = ''
+})
+
+const handleLogin = handleSubmit(async (values) => {
+    await login(values)
 })
 </script>
 
@@ -31,12 +48,10 @@ watch([() => form.email, () => form.password], () => {
     <div :class="cn('flex flex-col gap-6', props.class)">
         <Card class="overflow-hidden p-0">
             <CardContent class="grid p-0 md:grid-cols-2">
-                <form class="p-6 md:p-8" @submit.prevent="login(form)">
+                <form class="p-6 md:p-8" novalidate @submit.prevent="handleLogin">
                     <FieldGroup>
                         <div class="flex flex-col items-center gap-2 text-center">
-                            <h1 class="text-2xl font-bold">
-                                Bienvenido de vuelta
-                            </h1>
+                            <h1 class="text-2xl font-bold">Bienvenido de vuelta</h1>
                             <p class="text-muted-foreground text-balance">
                                 Inicia sesión en tu cuenta de Evihub
                             </p>
@@ -44,16 +59,20 @@ watch([() => form.email, () => form.password], () => {
 
                         <Field>
                             <FieldLabel for="email">Email</FieldLabel>
-                            <Input id="email" v-model="form.email" type="email" placeholder="tu@empresa.com" required
-                                autocomplete="email" />
+                            <Input id="email" v-model="email" v-bind="emailAttrs" type="email"
+                                placeholder="tu@empresa.com" autocomplete="email" />
+                            <p v-if="errors.email" class="text-xs text-destructive mt-[-4px]">
+                                {{ errors.email }}
+                            </p>
                         </Field>
 
                         <Field>
-                            <div class="flex items-center">
-                                <FieldLabel for="password">Password</FieldLabel>
-                            </div>
-                            <Input id="password" v-model="form.password" type="password" required
+                            <FieldLabel for="password">Contraseña</FieldLabel>
+                            <Input id="password" v-model="password" v-bind="passwordAttrs" type="password"
                                 autocomplete="current-password" />
+                            <p v-if="errors.password" class="text-xs text-destructive mt-[-4px]">
+                                {{ errors.password }}
+                            </p>
                         </Field>
 
                         <p v-if="error" class="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">

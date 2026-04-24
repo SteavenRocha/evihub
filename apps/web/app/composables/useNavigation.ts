@@ -12,7 +12,7 @@ import {
 export const useNavigation = () => {
     const navMain = [
         {
-            title: 'Dashboard',
+            title: 'Inicio',
             href: '/dashboard',
             icon: LayoutDashboard,
         },
