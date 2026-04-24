@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LogOut, Settings, ChevronsUpDown } from 'lucide-vue-next'
+import { LogOut, ChevronsUpDown } from 'lucide-vue-next'
 import {
     SidebarFooter,
     SidebarMenu,
@@ -44,19 +44,19 @@ const initials = computed(() =>
                             <ChevronsUpDown class="ml-auto h-4 w-4 shrink-0 text-muted-foreground" />
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent class="w-56" side="top" align="start" :side-offset="4">
+                    <DropdownMenuContent class="w-56" side="top" align="end" :side-offset="8">
                         <div class="px-2 py-1.5">
                             <p class="text-sm font-medium">{{ fullName }}</p>
                             <p class="text-xs text-muted-foreground">{{ user?.email }}</p>
                         </div>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem as-child class="cursor-pointer">
+                        <!-- <DropdownMenuItem as-child class="cursor-pointer">
                             <NuxtLink to="/settings">
                                 <Settings class="mr-2 h-4 w-4" />
                                 Configuración
                             </NuxtLink>
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator />
+                        <DropdownMenuSeparator /> -->
                         <DropdownMenuItem class="cursor-pointer text-destructive focus:text-destructive"
                             @click="logout">
                             <LogOut class="mr-2 h-4 w-4" />

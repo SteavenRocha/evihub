@@ -49,9 +49,9 @@ watch(() => model.value, (val) => {
     }
     const match = val.match(/(\d{1,2}):(\d{2})\s*(a\.\s*m\.|p\.\s*m\.)/i)
     if (!match) return
-    selectedHour.value = match[1].padStart(2, '0')
-    selectedMinute.value = match[2]
-    selectedPeriod.value = match[3].replace(/\s/g, ' ').toLowerCase().includes('p') ? 'p. m.' : 'a. m.'
+    selectedHour.value = (match[1] ?? '').padStart(2, '0')
+    selectedMinute.value = match[2] ?? ''
+    selectedPeriod.value = (match[3] ?? '').replace(/\s/g, ' ').toLowerCase().includes('p') ? 'p. m.' : 'a. m.'
 }, { immediate: true })
 
 const displayValue = computed(() => {
@@ -78,7 +78,7 @@ const displayValue = computed(() => {
                     <p class="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">Hora</p>
                     <div class="overflow-y-auto max-h-40 flex flex-col gap-0.5 hide-scrollbar">
                         <button v-for="h in hours" :key="h" :class="[
-                            'text-xs px-2 py-1 rounded-md text-left transition-colors cursor-pointer',
+                            'text-sm px-2 py-1 rounded-md text-left transition-colors cursor-pointer',
                             selectedHour === h
                                 ? 'bg-primary text-primary-foreground font-medium'
                                 : 'hover:bg-muted text-foreground'
@@ -93,7 +93,7 @@ const displayValue = computed(() => {
                     <p class="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">Min</p>
                     <div class="overflow-y-auto max-h-40 flex flex-col gap-0.5 hide-scrollbar">
                         <button v-for="m in minutes" :key="m" :class="[
-                            'text-xs px-2 py-1 rounded-md text-left transition-colors cursor-pointer',
+                            'text-sm px-2 py-1 rounded-md text-left transition-colors cursor-pointer',
                             selectedMinute === m
                                 ? 'bg-primary text-primary-foreground font-medium'
                                 : 'hover:bg-muted text-foreground'
@@ -109,7 +109,7 @@ const displayValue = computed(() => {
                     </p>
                     <div class="flex flex-col gap-0.5">
                         <button v-for="p in periods" :key="p" :class="[
-                            'text-xs px-2 py-1 rounded-md text-left transition-colors cursor-pointer',
+                            'text-sm px-2 py-1 rounded-md text-left transition-colors cursor-pointer',
                             selectedPeriod === p
                                 ? 'bg-primary text-primary-foreground font-medium'
                                 : 'hover:bg-muted text-foreground'

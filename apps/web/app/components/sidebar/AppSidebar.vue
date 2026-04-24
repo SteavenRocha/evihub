@@ -5,7 +5,8 @@ import AppSidebarNav from './AppSidebarNav.vue'
 import AppSidebarFooter from './AppSidebarFooter.vue'
 import { useNavigation } from '@/composables/useNavigation'
 
-const { navMain, navManagement, navAccount } = useNavigation()
+const { navMain } = useNavigation()
+/* const { navMain, navManagement, navAccount } = useNavigation() */
 </script>
 
 <template>
@@ -15,9 +16,9 @@ const { navMain, navManagement, navAccount } = useNavigation()
         <SidebarContent>
             <AppSidebarNav label="Principal" :items="navMain" />
             <SidebarSeparator />
-            <AppSidebarNav label="Gestión" :items="navManagement" />
+            <!--  <AppSidebarNav label="Gestión" :items="navManagement" />
             <SidebarSeparator />
-            <AppSidebarNav label="Cuenta" :items="navAccount" />
+            <AppSidebarNav label="Cuenta" :items="navAccount" /> -->
         </SidebarContent>
 
         <AppSidebarFooter />

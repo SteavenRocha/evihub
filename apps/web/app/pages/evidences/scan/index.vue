@@ -10,11 +10,15 @@ import {
     Select, SelectContent, SelectItem,
     SelectTrigger, SelectValue,
 } from '@/components/ui/select'
+import { useForm } from 'vee-validate'
+import { toTypedSchema } from '@vee-validate/zod'
+import { z } from 'zod'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { PAYMENT_METHODS } from '~/constants/payment-methods'
 import { CURRENCY } from '~/constants/currency'
+import { useEvidenceApi } from '~/api/evidence'
 
 definePageMeta({ layout: 'default' })
 useHead({ title: 'Escanear comprobante | Evihub' })
@@ -24,6 +28,7 @@ const {
     error,
     scanResult,
     hasResult,
+    imageFile,
     processImage,
     resetScanner,
 } = useOcrScanner()
@@ -92,27 +97,57 @@ async function capturePhoto() {
     }, 'image/jpeg', 0.9)
 }
 
+// Crear Evidencia
+const { create } = useEvidenceApi() // Se usa directamente el fetch (api), no el composable useEvidence
+const isSaving = ref(false)
+const saveError = ref<string | null>(null)
+
 // --- Form ---
-const form = ref({
-    amount: '',
-    currency: '',
-    paymentDate: '',
-    paymentTime: '',
-    paymentMethod: '',
-    transactionNumber: '',
-    recipient: '',
-    description: '',
+const formSchema = toTypedSchema(z.object({
+    transactionNumber: z.string({ error: 'El N° de operación es requerido' }).min(1, 'El N° de operación es requerido'),
+    recipient: z.string({ error: 'El destinatario es requerido' }).min(1, 'El destinatario es requerido'),
+    paymentMethod: z.string({ error: 'Selecciona un método de pago' }).min(1, 'Selecciona un método de pago'),
+    amount: z.coerce.number({
+        error: (issue) => issue.input === undefined || issue.input === ''
+            ? 'El monto es requerido'
+            : 'Ingresa un monto válido'
+    }).positive('El monto debe ser mayor a 0'),
+    currency: z.string({ error: 'Selecciona una moneda' }).min(1, 'Selecciona una moneda'),
+    paymentDate: z.string({ error: 'Selecciona una fecha' }).min(1, 'Selecciona una fecha'),
+    paymentTime: z.string({ error: 'Selecciona una hora' }).min(1, 'Selecciona una hora'),
+    description: z.string().optional(),
+}))
+
+const {
+    handleSubmit,
+    errors,
+    resetForm,
+    setValues,
+    defineField
+} = useForm({
+    validationSchema: formSchema,
 })
+
+const [transactionNumber, transactionNumberAttrs] = defineField('transactionNumber')
+const [recipient, recipientAttrs] = defineField('recipient')
+const [paymentMethod, paymentMethodAttrs] = defineField('paymentMethod')
+const [amount, amountAttrs] = defineField<'amount', string | number>('amount')
+const [currency, currencyAttrs] = defineField('currency')
+const [paymentDate] = defineField('paymentDate')
+const [paymentTime] = defineField('paymentTime')
+const [description, descriptionAttrs] = defineField('description')
 
 watch(scanResult, (result) => {
     if (!result) return
-    form.value.amount = result.amount?.toString() ?? ''
-    form.value.currency = result.currency ?? ''
-    form.value.paymentDate = result.paymentDate ?? ''
-    form.value.paymentTime = result.paymentTime ?? ''
-    form.value.paymentMethod = result.paymentMethod ?? ''
-    form.value.transactionNumber = result.transactionNumber ?? ''
-    form.value.recipient = result.recipient ?? ''
+    setValues({
+        transactionNumber: result.transactionNumber ?? '',
+        recipient: result.recipient ?? '',
+        paymentMethod: result.paymentMethod ?? '',
+        amount: result.amount ?? undefined,
+        currency: result.currency ?? '',
+        paymentDate: result.paymentDate ?? '',
+        paymentTime: result.paymentTime ?? '',
+    })
 })
 
 function onFileInputChange(e: Event) {
@@ -129,18 +164,44 @@ function onDrop(e: DragEvent) {
 
 function handleReset() {
     resetScanner()
-    form.value = {
-        amount: '', currency: '', paymentDate: '',
-        paymentTime: '', paymentMethod: '', transactionNumber: '',
-        recipient: '', description: '',
-    }
+    resetForm()
     if (fileInput.value) fileInput.value.value = ''
     if (cameraInput.value) cameraInput.value.value = ''
 }
 
-async function handleSave() {
-    // próximo paso
-}
+const handleSave = handleSubmit(async (values) => {
+    if (!imageFile.value) return
+
+    isSaving.value = true
+    saveError.value = null
+
+    try {
+        const formData = new FormData()
+        formData.append('image', imageFile.value)
+        formData.append('transactionNumber', values.transactionNumber)
+        formData.append('recipient', values.recipient)
+        formData.append('paymentMethod', values.paymentMethod)
+        formData.append('amount', String(values.amount))
+        formData.append('currency', values.currency)
+        formData.append('paymentDate', values.paymentDate)
+        formData.append('paymentTime', values.paymentTime)
+        if (values.description) formData.append('description', values.description)
+        if (scanResult.value?.isLegible !== undefined) {
+            formData.append('isLegible', String(scanResult.value.isLegible))
+        }
+        if (scanResult.value?.ocrRaw) {
+            formData.append('ocrRaw', JSON.stringify(scanResult.value.ocrRaw))
+        }
+
+        await create(formData)
+        handleReset()
+    } catch (err: any) {
+        handleReset()
+        saveError.value = err?.data?.message ?? 'Error al guardar el comprobante'
+    } finally {
+        isSaving.value = false
+    }
+})
 
 onUnmounted(() => {
     closeCamera()
@@ -221,11 +282,11 @@ onUnmounted(() => {
                             </button>
                         </div>
 
-                        <Button class="w-full gap-2 cursor-pointer" @click="capturePhoto">
+                        <Button class="w-full gap-2" @click="capturePhoto">
                             <Camera class="h-4 w-4" />
                             Capturar foto
                         </Button>
-                        <Button variant="outline" class="w-full cursor-pointer" @click="closeCamera">
+                        <Button variant="outline" class="w-full" @click="closeCamera">
                             Cancelar
                         </Button>
                     </template>
@@ -242,7 +303,7 @@ onUnmounted(() => {
                             </Badge>
                         </div>
 
-                        <Button variant="outline" class="w-full cursor-pointer" @click="handleReset">
+                        <Button variant="outline" class="w-full" @click="handleReset">
                             <RotateCcw class="mr-2 h-4 w-4" />
                             Escanear de nuevo
                         </Button>
@@ -281,7 +342,7 @@ onUnmounted(() => {
                                 <Separator class="flex-1" />
                             </div>
 
-                            <Button variant="outline" class="w-full cursor-pointer" @click="openCamera">
+                            <Button variant="outline" class="w-full" @click="openCamera">
                                 <Camera class="mr-2 h-4 w-4" />
                                 Tomar foto con el dispositivo
                             </Button>
@@ -296,33 +357,31 @@ onUnmounted(() => {
                 <div class="border-b border-border py-4 px-6">
                     <div class="text-base font-medium">Datos del comprobante</div>
                 </div>
-                <div class="space-y-4 p-6">
-                    <!-- Trasancion Number + Recipent -->
+                <form class="space-y-4 p-6" @submit.prevent="handleSave">
+                    <!-- N° operación + Destinatario -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <div class="space-y-2">
-                            <Label for="transactionNumber"
-                                class="text-xs text-muted-foreground uppercase tracking-wide">N°
-                                de
-                                operación</Label>
-                            <Input id="transactionNumber" v-model="form.transactionNumber" placeholder="Ej: 2853227" />
+                            <Label class="text-xs text-muted-foreground uppercase tracking-wide">N° de operación</Label>
+                            <Input v-model="transactionNumber" v-bind="transactionNumberAttrs"
+                                placeholder="Ej: 2853227" />
+                            <p v-if="errors.transactionNumber" class="text-xs text-destructive">
+                                {{ errors.transactionNumber }}
+                            </p>
                         </div>
 
                         <div class="col-span-1 sm:col-span-2 space-y-2">
-                            <Label for="recipient"
-                                class="text-xs text-muted-foreground uppercase tracking-wide">Destinatario</Label>
-                            <Input id="recipient" v-model="form.recipient" placeholder="Nombre del destinatario" />
+                            <Label class="text-xs text-muted-foreground uppercase tracking-wide">Destinatario</Label>
+                            <Input v-model="recipient" v-bind="recipientAttrs" placeholder="Nombre del destinatario" />
+                            <p v-if="errors.recipient" class="text-xs text-destructive">{{ errors.recipient }}</p>
                         </div>
                     </div>
 
                     <!-- Método de pago + Monto + Moneda -->
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                        <!-- Bank selector -->
                         <div class="space-y-2">
-                            <Label class="text-xs text-muted-foreground uppercase tracking-wide">
-                                Método de pago
-                            </Label>
-                            <Select v-model="form.paymentMethod">
-                                <SelectTrigger class="w-full">
+                            <Label class="text-xs text-muted-foreground uppercase tracking-wide">Método de pago</Label>
+                            <Select v-model="paymentMethod">
+                                <SelectTrigger class="w-full" v-bind="paymentMethodAttrs">
                                     <SelectValue placeholder="Selecciona un método" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -335,68 +394,73 @@ onUnmounted(() => {
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
+                            <p v-if="errors.paymentMethod" class="text-xs text-destructive">{{ errors.paymentMethod }}
+                            </p>
                         </div>
 
                         <div class="space-y-2">
-                            <Label for="amount"
-                                class="text-xs text-muted-foreground uppercase tracking-wide">Monto</Label>
-                            <div class="relative">
-                                <Input id="amount" v-model="form.amount" type="number" step="0.01" min="0"
-                                    placeholder="0.00" />
-                            </div>
+                            <Label class="text-xs text-muted-foreground uppercase tracking-wide">Monto</Label>
+                            <Input v-model="amount" v-bind="amountAttrs" type="number" step="0.01" placeholder="0.00" />
+                            <p v-if="errors.amount" class="text-xs text-destructive">{{ errors.amount }}</p>
                         </div>
 
                         <div class="space-y-2">
                             <Label class="text-xs text-muted-foreground uppercase tracking-wide">Moneda</Label>
-                            <Select v-model="form.currency">
-                                <SelectTrigger class="w-full">
+                            <Select v-model="currency">
+                                <SelectTrigger class="w-full" v-bind="currencyAttrs">
                                     <SelectValue placeholder="Selecciona una moneda" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem v-for="(b, id) in CURRENCY" :key="id" :value="id">
-                                        <div class="flex items-center gap-2">
-                                            <span>{{ b?.code }} — {{ b?.name }}</span>
-                                        </div>
+                                        {{ b?.code }} — {{ b?.name }}
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
+                            <p v-if="errors.currency" class="text-xs text-destructive">{{ errors.currency }}</p>
                         </div>
                     </div>
 
-                    <!-- Date + Time -->
+                    <!-- Fecha + Hora -->
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-2">
-                            <Label for="paymentDate"
-                                class="text-xs text-muted-foreground uppercase tracking-wide">Fecha</Label>
-                            <DatePicker v-model="form.paymentDate" />
+                            <Label class="text-xs text-muted-foreground uppercase tracking-wide">Fecha</Label>
+                            <DatePicker v-model="paymentDate" />
+                            <p v-if="errors.paymentDate" class="text-xs text-destructive">{{ errors.paymentDate }}</p>
                         </div>
                         <div class="space-y-2">
-                            <Label for="paymentTime"
-                                class="text-xs text-muted-foreground uppercase tracking-wide">Hora</Label>
-                            <TimePicker v-model="form.paymentTime" />
+                            <Label class="text-xs text-muted-foreground uppercase tracking-wide">Hora</Label>
+                            <TimePicker v-model="paymentTime" />
+                            <p v-if="errors.paymentTime" class="text-xs text-destructive">{{ errors.paymentTime }}</p>
                         </div>
                     </div>
 
-                    <!-- Description -->
+                    <!-- Descripción -->
                     <div class="space-y-2">
-                        <Label for="description"
-                            class="text-xs text-muted-foreground uppercase tracking-wide">Descripción
-                            (opcional)</Label>
-                        <Textarea id="description" v-model="form.description"
+                        <Label class="text-xs text-muted-foreground uppercase tracking-wide">
+                            Descripción <span
+                                class="normal-case tracking-normal text-muted-foreground/60">(opcional)</span>
+                        </Label>
+                        <Textarea v-model="description" v-bind="descriptionAttrs"
                             placeholder="Descripción del pago, servicio o producto..." class="resize-none h-24" />
                     </div>
 
+                    <Alert v-if="saveError" variant="destructive" class="mb-4">
+                        <AlertCircle class="h-4 w-4" />
+                        <AlertDescription>{{ saveError }}</AlertDescription>
+                    </Alert>
+
                     <!-- Actions -->
                     <div class="flex items-center justify-end gap-2 pt-1">
-                        <Button variant="outline" @click="handleReset">
+                        <Button variant="outline" type="button" @click="handleReset" :disabled="isSaving">
                             Cancelar
                         </Button>
-                        <Button :disabled="!hasResult" @click="handleSave">
-                            <Save class="mr-2 h-4 w-4" />
-                            Guardar pago
+                        <Button type="submit" :disabled="isSaving">
+                            <Loader2 v-if="isSaving" class="h-4 w-4 animate-spin" />
+                            <Save v-else class="h-4 w-4" />
+                            {{ isSaving ? 'Guardando...' : 'Guardar' }}
                         </Button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>

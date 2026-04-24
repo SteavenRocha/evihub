@@ -198,7 +198,7 @@ const openDetail = async (item: Evidence) => {
         <!-- Date Filter -->
         <DateRangeFilter v-model="dateRange" />
 
-        <Button size="sm" variant="ghost" class="h-9 text-muted-foreground cursor-pointer" @click="handleClearFilters">
+        <Button size="sm" variant="ghost" class="h-9 text-muted-foreground" @click="handleClearFilters">
             <X class="h-3.5 w-3.5" />
             Limpiar filtros
         </Button>
@@ -290,8 +290,7 @@ const openDetail = async (item: Evidence) => {
 
                             <!-- Action -->
                             <TableCell>
-                                <Button variant="ghost" size="sm" class="text-xs h-7 cursor-pointer"
-                                    @click="openDetail(item)">
+                                <Button variant="ghost" size="sm" class="text-xs h-7" @click="openDetail(item)">
                                     <Eye class="h-3.5 w-3.5" />
                                     Ver detalle
                                 </Button>
@@ -358,7 +357,7 @@ const openDetail = async (item: Evidence) => {
                             </div>
 
                             <div class="mt-5">
-                                <Button variant="outline" class="w-full gap-2 cursor-pointer">
+                                <Button variant="outline" class="w-full gap-2">
                                     <Download class="w-3.5 h-3.5" />
                                     Descargar comprobante
                                 </Button>
@@ -428,7 +427,7 @@ const openDetail = async (item: Evidence) => {
                             <!-- Actions -->
                             <div class="mt-auto pt-6 flex justify-end">
                                 <DialogClose as-child>
-                                    <Button variant="secondary" class="w-auto cursor-pointer">
+                                    <Button variant="secondary" class="w-auto">
                                         Cerrar
                                     </Button>
                                 </DialogClose>

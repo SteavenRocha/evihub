@@ -12,6 +12,12 @@ export function useEvidenceApi() {
                 body
             }),
 
+        create: (body: FormData) =>
+            $api<Evidence>('/evidences', {
+                method: 'POST',
+                body
+            }),
+
         getAll(filters: EvidenceFilters = {}) {
             const { paginationParams, ...restOfFilters } = filters;
 

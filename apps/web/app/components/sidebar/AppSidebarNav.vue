@@ -5,10 +5,8 @@ import {
     SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuItem,
-    SidebarMenuButton,
-    SidebarMenuBadge,
+    SidebarMenuButton
 } from '@/components/ui/sidebar'
-import { Badge } from '@/components/ui/badge'
 
 interface NavItem {
     title: string
