@@ -19,7 +19,7 @@ ARG API_BASE_URL=https://evihub.orcronics.com/api/v2
 ENV API_BASE_URL=$API_BASE_URL
 ENV NX_DAEMON=false
 ENV NX_PARALLEL=1
-RUN npx nx build web --prod
+RUN cd apps/web && npx nuxt generate
 
 # 3. Runner — Nginx sirviendo estáticos (igual que el ERP)
 FROM nginx:alpine AS runner
