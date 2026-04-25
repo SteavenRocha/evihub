@@ -23,6 +23,6 @@ RUN npx nx build web --prod
 
 # 3. Runner — Nginx sirviendo estáticos (igual que el ERP)
 FROM nginx:alpine AS runner
-COPY --from=builder /app/dist/apps/web/.output/public /usr/share/nginx/html
+COPY --from=builder /app/apps/web/.output/public /usr/share/nginx/html
 COPY apps/web/nginx-spa.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
