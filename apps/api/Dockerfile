@@ -28,7 +28,7 @@ ENV NODE_ENV=production
 
 RUN addgroup -S nodejs && adduser -S evihub -G nodejs
 
-COPY --from=builder /app/dist/apps/api ./dist
+COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/libs/shared/db/prisma ./prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
