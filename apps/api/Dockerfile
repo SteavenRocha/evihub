@@ -20,8 +20,6 @@ ENV NX_PARALLEL=1
 RUN npx prisma generate
 RUN npx nx build api --prod
 
-RUN yarn workspaces focus api --production
-
 # 3. Runner
 FROM node:22-alpine3.20 AS runner
 RUN apk add --no-cache su-exec
