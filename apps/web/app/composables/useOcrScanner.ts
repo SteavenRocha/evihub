@@ -1,5 +1,17 @@
 import { useEvidenceApi } from '../api/evidence'
 import type { OcrResult } from '../types/ocr'
+import imageCompression from 'browser-image-compression'
+
+async function compressImage(file: File): Promise<File> {
+  if (file.size < 1024 * 1024) return file
+
+  return await imageCompression(file, {
+    maxSizeMB: 1,
+    maxWidthOrHeight: 1920,
+    useWebWorker: true,
+    fileType: 'image/jpeg',
+  })
+}
 
 export function useOcrScanner() {
   const { scan } = useEvidenceApi()
@@ -15,11 +27,13 @@ export function useOcrScanner() {
     isLoading.value = true
     error.value = null
     scanResult.value = null
-    imageFile.value = file
 
     try {
+      const compressed = await compressImage(file)
+      imageFile.value = compressed
+
       const formData = new FormData()
-      formData.append('image', file)
+      formData.append('image', compressed)
 
       const result = await scan(formData)
 
