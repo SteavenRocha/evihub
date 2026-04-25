@@ -30,7 +30,7 @@ RUN addgroup -S nodejs && adduser -S evihub -G nodejs
 
 COPY --from=builder /app/apps/api/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/libs/shared/db/prisma ./prisma
+COPY --from=builder /app/libs/shared/db/prisma ./libs/shared/db/prisma
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
 COPY apps/api/entrypoint.sh ./entrypoint.sh
